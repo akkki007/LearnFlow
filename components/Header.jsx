@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { Dialog } from '@headlessui/react';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Dialog } from "@headlessui/react";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export default function Header() {
   const router = useRouter();
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Playground', href: '/playground' },
-    { name: 'About', href: '/about' },
-    { name: 'Courses', href: '/courses' },
+    { name: "Home", href: "/" },
+    { name: "Playground", href: "/playground" },
+    { name: "About", href: "/about" },
+    { name: "Courses", href: "/courses" },
   ];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -21,19 +21,20 @@ export default function Header() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const token = document.cookie.includes('jwt=');
+    const token = document.cookie.includes("jwt=");
     if (token) {
       setIsAuthenticated(true);
-      setIsAdmin(document.cookie.includes('adminToken='));
+      setIsAdmin(document.cookie.includes("adminToken="));
     }
   }, []);
 
   const handleLogout = () => {
-    document.cookie = 'jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    document.cookie = 'adminToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    document.cookie = "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    document.cookie =
+      "adminToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
     setIsAuthenticated(false);
     setIsAdmin(false);
-    router.push('/');
+    router.push("/");
   };
 
   return (
@@ -44,7 +45,13 @@ export default function Header() {
       >
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5">
-            <Image src="/logo.png" alt="EduForge" width={160} height={40} className="h-40 w-auto" />
+            <Image
+              src="/logo.png"
+              alt="EduForge"
+              width={160}
+              height={40}
+              className="h-40 w-auto"
+            />
           </Link>
         </div>
         <div className="flex lg:hidden">
@@ -120,7 +127,13 @@ export default function Header() {
         <Dialog.Panel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex items-center justify-between">
             <Link href="/" className="-m-1.5 p-1.5">
-              <Image src="/logo.png" alt="EduForge" width={160} height={40} className="h-40 w-auto" />
+              <Image
+                src="/logo.png"
+                alt="EduForge"
+                width={160}
+                height={40}
+                className="h-40 w-auto"
+              />
             </Link>
             <button
               type="button"

@@ -7,7 +7,7 @@ import {
   GalleryVerticalEnd,
   School,
   Settings2,
-  FileUser
+  FileUser,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -44,7 +44,9 @@ export function AppSidebar(props) {
 
       // Extract name from email
       const name = decoded.email.split("@")[0];
-      const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name)}`;
+      const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(
+        name
+      )}`;
 
       setUser({
         name,

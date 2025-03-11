@@ -66,9 +66,9 @@ export default function PendingAccounts() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Pending Accounts</h1>
-        <Button 
-          variant="destructive" 
-          onClick={handleLogout} 
+        <Button
+          variant="destructive"
+          onClick={handleLogout}
           className="hover:bg-red-600"
         >
           Logout
@@ -79,14 +79,20 @@ export default function PendingAccounts() {
       <div className="grid gap-4">
         {accounts.length > 0 ? (
           accounts.map((account) => (
-            <Card key={account._id} className="hover:shadow-lg transition-shadow">
+            <Card
+              key={account._id}
+              className="hover:shadow-lg transition-shadow"
+            >
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">
-                  {account.email} <span className="text-muted-foreground">({account.role})</span>
+                  {account.email}{" "}
+                  <span className="text-muted-foreground">
+                    ({account.role})
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex justify-end">
-                <Button 
+                <Button
                   onClick={() => handleApprove(account._id, account.role)}
                   className="bg-emerald-600 hover:bg-emerald-700"
                 >
@@ -96,7 +102,9 @@ export default function PendingAccounts() {
             </Card>
           ))
         ) : (
-          <p className="text-center text-muted-foreground">No pending accounts found.</p>
+          <p className="text-center text-muted-foreground">
+            No pending accounts found.
+          </p>
         )}
       </div>
     </div>

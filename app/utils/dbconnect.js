@@ -5,8 +5,8 @@ dotenv.config();
 
 const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb://localhost:27017/LearnFlow",{
-      serverSelectionTimeoutMS:5000
+    await mongoose.connect("mongodb://localhost:27017/LearnFlow", {
+      serverSelectionTimeoutMS: 5000,
     });
     console.log("MongoDB connected successfully");
   } catch (error) {

@@ -18,7 +18,7 @@ export async function POST(req) {
       email,
       password,
       role,
-      subject
+      subject,
     } = body;
 
     if (!email || !password || !role) {
@@ -56,7 +56,10 @@ export async function POST(req) {
     if (role === "student") {
       if (!fullname || !enrollmentNo || !division) {
         return Response.json(
-          { error: "Fullname, Enrollment No and Division are required for students" },
+          {
+            error:
+              "Fullname, Enrollment No and Division are required for students",
+          },
           { status: 400, headers: { "Content-Type": "application/json" } }
         );
       }

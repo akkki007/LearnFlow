@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner"; 
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,9 @@ import Link from "next/link";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters" }),
 });
 
 export function LoginForm({ className, ...props }) {
@@ -49,8 +51,6 @@ export function LoginForm({ className, ...props }) {
         throw new Error(data.error || "Login failed");
       }
 
-
-
       // ✅ Store token and role
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
@@ -66,7 +66,6 @@ export function LoginForm({ className, ...props }) {
 
       // ✅ Display success toast
       toast.success("Login successful! Redirecting...");
-
     } catch (error) {
       console.error("Login failed:", error.message);
 
@@ -123,7 +122,10 @@ export function LoginForm({ className, ...props }) {
       <div className="grid gap-2">
         <div className="flex items-center">
           <Label htmlFor="password">Password</Label>
-          <Link href="/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
+          <Link
+            href="/forgot-password"
+            className="ml-auto text-sm underline-offset-4 hover:underline"
+          >
             Forgot your password?
           </Link>
         </div>
@@ -134,7 +136,9 @@ export function LoginForm({ className, ...props }) {
           {...form.register("password")}
         />
         {form.formState.errors.password && (
-          <p className="text-red-500">{form.formState.errors.password.message}</p>
+          <p className="text-red-500">
+            {form.formState.errors.password.message}
+          </p>
         )}
       </div>
 
@@ -163,7 +167,10 @@ export function LoginForm({ className, ...props }) {
       {/* Registration Link */}
       <div className="text-center text-sm">
         Don't have an account?{" "}
-        <Link href="/register" className="text-emerald-600 font-medium hover:text-emerald-800 hover:underline">
+        <Link
+          href="/register"
+          className="text-emerald-600 font-medium hover:text-emerald-800 hover:underline"
+        >
           Register
         </Link>
       </div>

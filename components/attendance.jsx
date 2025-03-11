@@ -1,3 +1,5 @@
+"use client";
+
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Button, Checkbox } from "@mui/material";
 import axios from "axios";
@@ -206,4 +208,3 @@ export default function Attendance() {
     </div>
   );
 }
-

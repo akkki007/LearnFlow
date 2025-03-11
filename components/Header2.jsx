@@ -12,7 +12,7 @@ function Header2() {
     { name: "Courses", href: "/courses" },
   ];
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   return (
     <header className="absolute inset-x-0 top-0 z-50">
       <nav

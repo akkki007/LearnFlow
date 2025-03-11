@@ -1,3 +1,5 @@
+"use client";
+
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useState, useEffect } from "react";
 import { Box, Button } from "@mui/material";
@@ -154,14 +156,11 @@ export default function Marks() {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:4000/updateMarks",
-        {
-          division: division,
-          subject: subject,
-          marks: rows,
-        }
-      );
+      const response = await axios.post("http://localhost:4000/updateMarks", {
+        division: division,
+        subject: subject,
+        marks: rows,
+      });
       console.log("Marks updated:", response.data);
     } catch (error) {
       console.error("Error updating marks:", error);
