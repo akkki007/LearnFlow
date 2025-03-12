@@ -1,3 +1,5 @@
+"use client"
+
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -11,7 +13,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import Marks from "./components/marks"
+import Marks from "@/components/marks"
 
 export default function Page() {
   return (
@@ -29,7 +31,7 @@ export default function Page() {
                     Mark respective attendance
                   </BreadcrumbLink>
                 </BreadcrumbItem>
-                
+
               </BreadcrumbList>
             </Breadcrumb>
           </div>

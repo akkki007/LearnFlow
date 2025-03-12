@@ -7,7 +7,7 @@ import {
   GalleryVerticalEnd,
   School,
   Settings2,
-  FileUser
+  FileUser,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -24,25 +24,43 @@ import {
 import { useRouter } from "next/navigation";
 import jwt from "jsonwebtoken";
 
-export function AppSidebar(props) {
+export function   AppSidebar(props) {
   const [user, setUser] = React.useState(null);
   const router = useRouter();
 
   React.useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/unauthorized");
-      return;
-    }
+    console.log("Token from localStorage:", token); // Debugging
+
 
     try {
       const decoded = jwt.decode(token);
-      if (decoded.role !== "teacher") {
+      console.log("Decoded Token:", decoded); // Debugging
+
+      if (!decoded || !decoded.email || !decoded.role) {
+        console.error("Invalid token structure");
+        localStorage.removeItem("token");
         router.push("/unauthorized");
         return;
       }
 
-      // Extract name from email
+      // Check token expiry
+      const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+      if (decoded.exp && decoded.exp < currentTime) {
+        console.error("Token expired");
+        localStorage.removeItem("token");
+        router.push("/unauthorized");
+        return;
+      }
+
+      // Validate role
+      if (decoded.role !== "teacher") {
+        console.error("Unauthorized role:", decoded.role);
+        router.push("/login");
+        return;
+      }
+
+      // Set user details
       const name = decoded.email.split("@")[0];
       const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name)}`;
 
@@ -53,6 +71,7 @@ export function AppSidebar(props) {
       });
     } catch (error) {
       console.error("Invalid token:", error.message);
+      localStorage.removeItem("token"); // Clear invalid token
       router.push("/unauthorized");
     }
   }, [router]);

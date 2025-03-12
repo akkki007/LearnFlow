@@ -1,7 +1,8 @@
+import { NextResponse } from "next/server";
 import connectDB from "@/app/utils/dbconnect";
 import student from "@/app/models/student";
 import teacher from "@/app/models/teacher";
-import bcrypt from "bcrypt";
+
 
 export async function POST(req) {
   await connectDB();
@@ -22,17 +23,17 @@ export async function POST(req) {
     } = body;
 
     if (!email || !password || !role) {
-      return Response.json(
+      return NextResponse.json(
         { error: "All fields are required" },
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400 }
       );
     }
 
     // 🚫 Block admin registration
     if (role === "admin") {
-      return Response.json(
+      return NextResponse.json(
         { error: "Admin registration not allowed" },
-        { status: 403, headers: { "Content-Type": "application/json" } }
+        { status: 403 }
       );
     }
 
@@ -43,21 +44,18 @@ export async function POST(req) {
         : await teacher.findOne({ email });
 
     if (existingUser) {
-      return Response.json(
+      return NextResponse.json(
         { error: "User already exists" },
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400 }
       );
-    }
-
-    // ✅ Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    }  
 
     let newUser;
     if (role === "student") {
       if (!fullname || !enrollmentNo || !division) {
-        return Response.json(
+        return NextResponse.json(
           { error: "Fullname, Enrollment No and Division are required for students" },
-          { status: 400, headers: { "Content-Type": "application/json" } }
+          { status: 400 }
         );
       }
 
@@ -66,15 +64,15 @@ export async function POST(req) {
         enrollmentNo,
         division,
         email,
-        password: hashedPassword,
-        role, // ✅ Add role for students
+        password,
+        role,
         status: "pending", // ⏳ Set status to pending
       });
     } else if (role === "teacher") {
       if (!firstName || !lastName || !phoneNumber || !subject) {
-        return Response.json(
+        return NextResponse.json(
           { error: "All teacher fields are required" },
-          { status: 400, headers: { "Content-Type": "application/json" } }
+          { status: 400 }
         );
       }
 
@@ -84,7 +82,7 @@ export async function POST(req) {
         fullname: `${firstName} ${lastName}`, // ✅ Create fullname from firstName + lastName
         phoneNumber,
         email,
-        password: hashedPassword,
+        password,
         role,
         subject,
         status: "pending", // ⏳ Set status to pending
@@ -93,15 +91,15 @@ export async function POST(req) {
 
     await newUser.save();
 
-    return Response.json(
+    return NextResponse.json(
       { message: "Account created. Awaiting admin approval." },
-      { status: 201, headers: { "Content-Type": "application/json" } }
+      { status: 201 }
     );
   } catch (error) {
     console.error("Error during registration:", error);
-    return Response.json(
+    return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }

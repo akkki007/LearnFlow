@@ -1,11 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner"; 
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,11 +16,13 @@ import Link from "next/link";
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+  role: z.enum(["student", "teacher", "admin"]),
 });
 
 export function LoginForm({ className, ...props }) {
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState("student"); // Default role is 'student'
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const form = useForm({
@@ -28,8 +30,24 @@ export function LoginForm({ className, ...props }) {
     defaultValues: {
       email: "",
       password: "",
+      role: "student",
     },
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userRole = localStorage.getItem("role");
+
+    if (token && userRole) {
+      if (userRole === "admin") {
+        router.push("/admin");
+      } else if (userRole === "student") {
+        router.push("/student-dashboard");
+      } else if (userRole === "teacher") {
+        router.push("/teacher");
+      }
+    }
+  }, [router]);
 
   async function onSubmit(values) {
     setLoading(true);
@@ -40,42 +58,39 @@ export function LoginForm({ className, ...props }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...values, role }),
+        body: JSON.stringify(values),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Login failed");
+        throw new Error(data.error || "Login failed. Please check your credentials.");
       }
 
-
-
-      // ✅ Store token and role
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
 
-      // ✅ Redirect based on role
       if (data.role === "admin") {
         router.push("/admin");
       } else if (data.role === "student") {
         router.push("/student-dashboard");
       } else if (data.role === "teacher") {
-        router.push("/teacher-dashboard");
+        router.push("/teacher");
       }
 
-      // ✅ Display success toast
       toast.success("Login successful! Redirecting...");
-
     } catch (error) {
       console.error("Login failed:", error.message);
-
-      // ✅ Display error toast
       toast.error(error.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   }
+
+  const handleGoogleLogin = () => {
+    setGoogleLoading(true);
+    window.location.href = "/api/auth/google";
+  };
 
   return (
     <form
@@ -90,22 +105,22 @@ export function LoginForm({ className, ...props }) {
         </p>
       </div>
 
-      {/* Role Toggle */}
       <div className="grid gap-2">
         <Label htmlFor="role">Login as:</Label>
         <select
           id="role"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
+          {...form.register("role")}
           className="border rounded-md px-3 py-2"
         >
           <option value="student">Student</option>
           <option value="teacher">Teacher</option>
           <option value="admin">Admin</option>
         </select>
+        {form.formState.errors.role && (
+          <p className="text-red-500">{form.formState.errors.role.message}</p>
+        )}
       </div>
 
-      {/* Email */}
       <div className="grid gap-2">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -119,7 +134,6 @@ export function LoginForm({ className, ...props }) {
         )}
       </div>
 
-      {/* Password */}
       <div className="grid gap-2">
         <div className="flex items-center">
           <Label htmlFor="password">Password</Label>
@@ -127,18 +141,26 @@ export function LoginForm({ className, ...props }) {
             Forgot your password?
           </Link>
         </div>
-        <Input
-          id="password"
-          type="password"
-          placeholder="••••••••"
-          {...form.register("password")}
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="••••••••"
+            {...form.register("password")}
+          />
+          <button
+            type="button"
+            className="absolute right-2 top-2 text-muted-foreground"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
         {form.formState.errors.password && (
           <p className="text-red-500">{form.formState.errors.password.message}</p>
         )}
       </div>
 
-      {/* Submit Button */}
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? (
           <>
@@ -150,17 +172,27 @@ export function LoginForm({ className, ...props }) {
         )}
       </Button>
 
-      {/* Social Login */}
       <div className="relative text-center text-sm">
         <span className="relative z-10 bg-background px-2 text-muted-foreground">
           Or continue with
         </span>
       </div>
-      <Button variant="outline" className="w-full">
-        Login with Google
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={handleGoogleLogin}
+        disabled={googleLoading}
+      >
+        {googleLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Redirecting...
+          </>
+        ) : (
+          "Login with Google"
+        )}
       </Button>
 
-      {/* Registration Link */}
       <div className="text-center text-sm">
         Don't have an account?{" "}
         <Link href="/register" className="text-emerald-600 font-medium hover:text-emerald-800 hover:underline">
