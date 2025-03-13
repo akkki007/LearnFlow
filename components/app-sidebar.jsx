@@ -24,14 +24,13 @@ import {
 import { useRouter } from "next/navigation";
 import jwt from "jsonwebtoken";
 
-export function   AppSidebar(props) {
+export function AppSidebar(props) {
   const [user, setUser] = React.useState(null);
   const router = useRouter();
 
   React.useEffect(() => {
     const token = localStorage.getItem("token");
     console.log("Token from localStorage:", token); // Debugging
-
 
     try {
       const decoded = jwt.decode(token);
@@ -87,12 +86,12 @@ export function   AppSidebar(props) {
     navMain: [
       {
         title: "Attendance",
-        url: "/attendance",
+        url: "/attendance", // Link to the Attendance page
         icon: School,
       },
       {
         title: "Marks",
-        url: "/marks",
+        url: "/marks", // Link to the Marks page
         icon: Percent,
       },
       {

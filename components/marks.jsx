@@ -155,7 +155,7 @@ export default function Marks() {
   const handleSubmit = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/updateMarks",
+        "/api/marks/update",
         {
           division: division,
           subject: subject,
@@ -171,7 +171,7 @@ export default function Marks() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.post("http://localhost:4000/marks", {
+        const response = await axios.post("/api/marks", {
           division: division,
           subject: subject,
         });

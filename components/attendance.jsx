@@ -1,5 +1,5 @@
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { Button, Checkbox } from "@mui/material";
+import { Button, Checkbox, useMediaQuery, useTheme } from "@mui/material";
 import axios from "axios";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -10,18 +10,21 @@ import { InputLabel, Select, MenuItem, Box } from "@mui/material";
 import { useEffect, useState } from "react";
 
 export default function Attendance() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const columns = [
     {
       field: "studentname",
       headerName: "Name",
       type: "string",
-      width: 120,
+      width: isMobile ? 100 : 120, // Adjust width for mobile
       editable: false,
     },
     {
       field: "EnRoll",
       headerName: "EnRoll",
-      width: 110,
+      width: isMobile ? 90 : 110, // Adjust width for mobile
       type: "string",
       editable: false,
     },
@@ -36,7 +39,7 @@ export default function Attendance() {
           />
         );
       },
-      width: 140,
+      width: isMobile ? 100 : 140, // Adjust width for mobile
       editable: true,
     },
   ];
@@ -62,12 +65,12 @@ export default function Attendance() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.post("http://localhost:4000/show", {
+        const response = await axios.post("/api/attendance/show", {
           date: date.format("YYYY-MM-DD"),
           division: division,
         });
         if (response.data.length === 0) {
-          const studData = await axios.post("http://localhost:4000/stud", {
+          const studData = await axios.post("/api/attendance/stud", {
             division: division,
           });
           const newRows = studData.data.user.map((value, index) => ({
@@ -98,7 +101,7 @@ export default function Attendance() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.post("http://localhost:4000/load");
+        const response = await axios.post("/api/attendance/load");
         setRecord(response.data.user);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -110,7 +113,7 @@ export default function Attendance() {
   const handleSubmit = async () => {
     if (isInsert) {
       try {
-        await axios.post("http://localhost:4000/insert", {
+        await axios.post("/api/attendance/insert", {
           updatedRows: rows,
           date: date.format("YYYY-MM-DD"),
           div: division,
@@ -121,7 +124,7 @@ export default function Attendance() {
       }
     } else {
       try {
-        await axios.post("http://localhost:4000/update", {
+        await axios.post("/api/attendance/update", {
           updatedRows: rows,
           date: date.format("YYYY-MM-DD"),
           div: division,
@@ -134,24 +137,35 @@ export default function Attendance() {
   };
 
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         height: "100%",
         width: "100%",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        p: isMobile ? 1 : 3, // Adjust padding for mobile
       }}
     >
-      <div style={{ display: "flex", gap: "20px", margin: "20px 0" }}>
+      {/* Date Picker and Division Select */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row", // Stack vertically on mobile
+          gap: isMobile ? 2 : 4, // Adjust gap for mobile
+          alignItems: "center",
+          width: "100%",
+          maxWidth: "800px", // Limit width for larger screens
+          mb: 3,
+        }}
+      >
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DemoContainer components={["DatePicker"]}>
             <DatePicker
               label="Pick Date"
               value={date}
-              onChange={(newDate) => {
-                setDate(newDate);
-              }}
+              onChange={(newDate) => setDate(newDate)}
+              sx={{ width: isMobile ? "100%" : "auto" }} // Full width on mobile
             />
           </DemoContainer>
         </LocalizationProvider>
@@ -159,9 +173,7 @@ export default function Attendance() {
         <Box
           sx={{
             minWidth: 120,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
+            width: isMobile ? "100%" : "auto", // Full width on mobile
           }}
         >
           <InputLabel id="division-select-label">Division</InputLabel>
@@ -170,18 +182,25 @@ export default function Attendance() {
             id="division-select"
             value={division}
             label="Division"
-            onChange={(e) => {
-              setDivision(e.target.value);
-            }}
+            onChange={(e) => setDivision(e.target.value)}
+            fullWidth={isMobile} // Full width on mobile
           >
             <MenuItem value={"G3"}>G3</MenuItem>
             <MenuItem value={"H3"}>H3</MenuItem>
             <MenuItem value={"N3"}>N3</MenuItem>
           </Select>
         </Box>
-      </div>
+      </Box>
 
-      <Box sx={{ height: "60dvh", width: "90%" }}>
+      {/* DataGrid */}
+      <Box
+        sx={{
+          height: "60dvh",
+          width: "90%",
+          maxWidth: "1200px", // Limit width for larger screens
+          mb: 3,
+        }}
+      >
         <DataGrid
           rows={rows}
           columns={columns}
@@ -195,15 +214,18 @@ export default function Attendance() {
         />
       </Box>
 
+      {/* Submit Button */}
       <Button
         variant="contained"
         color="primary"
         onClick={handleSubmit}
-        sx={{ mt: 2 }}
+        sx={{
+          mt: 2,
+          width: isMobile ? "90%" : "auto", // Full width on mobile
+        }}
       >
         {isInsert ? "Insert" : "Submit"}
       </Button>
-    </div>
+    </Box>
   );
 }
-
