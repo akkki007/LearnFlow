@@ -47,6 +47,7 @@ export async function POST(req) {
     user.status = "accepted";
     await user.save();
 
+
     // ✅ Send approval email using SendGrid
     const msg = {
       to: user.email,
@@ -57,7 +58,8 @@ export async function POST(req) {
     };
 
     await sgMail.send(msg);
-
+    console.log("User approved and notified");
+    
     return new Response(
       JSON.stringify({ message: "User approved and notified" }),
       { status: 200, headers: { "Content-Type": "application/json" } }

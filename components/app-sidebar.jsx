@@ -80,7 +80,7 @@ export function AppSidebar(props) {
       {
         name: "Government Polytechnic Pune",
         logo: GalleryVerticalEnd,
-        plan: "Enterprise",
+        plan: "Educational Institute",
       },
     ],
     navMain: [

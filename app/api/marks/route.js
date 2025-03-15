@@ -50,7 +50,7 @@ export async function POST(req) {
     // Fetch student names
     const { data: students, error: studentError } = await supabase
       .from("students")
-      .select("studentname, enroll")
+      .select("studentname")
       .eq("division", division)
       .order("enroll", { ascending: true });
 
@@ -71,24 +71,15 @@ export async function POST(req) {
       );
     }
 
-    // Log the data for debugging
-    console.log("Marks Data:", marksData);
-    console.log("Students Data:", students);
-
-    // Combine student names with marks data
-    const combinedData = marksData.map((mark, index) => {
-      const student = students.find(
-        (student) => String(student.enroll) === String(mark.enroll)
-      );
-
-      return {
-        ...mark,
-        id: index,
-        studentname: student ? student.studentname : "Unknown",
-      };
-    });
-
-    return Response.json(combinedData, { status: 200 });
+    for (let index = 0; index < students.length; index++) {
+      if (marksData[index]) {
+        marksData[index].id = index;
+        marksData[index].studentname = students[index].studentname;
+      }
+    }
+    console.log(marksData);
+    
+    return Response.json(marksData, { status: 200 });
   } catch (error) {
     console.error("Detailed error:", error);
     return Response.json(
