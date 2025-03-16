@@ -9,13 +9,25 @@ import FAQ from "@/components/FAQ";
 import { FooterWithSocialLinks } from "@/components/Footer";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const isTeacher = useSelector((state) => state.role.isTeacher);
 
-  useEffect(() => {
-    console.log(isTeacher);
-  }, [isTeacher]);
+  const router = useRouter();
+   useEffect(() => {
+      const token = localStorage.getItem("token");
+      const userRole = localStorage.getItem("role");
+  
+      if (token && userRole) {
+        if (userRole === "admin") {
+          router.push("/admin");
+        } else if (userRole === "student") {
+          router.push("/student");
+        } else if (userRole === "teacher") {
+          router.push("/teacher");
+        }
+      }
+    }, [router]);
 
   return (
     <div className="bg-white">

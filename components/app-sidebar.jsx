@@ -8,6 +8,7 @@ import {
   School,
   Settings2,
   FileUser,
+  BookOpenIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -23,6 +24,7 @@ import {
 
 import { useRouter } from "next/navigation";
 import jwt from "jsonwebtoken";
+import { title } from "process";
 
 export function AppSidebar(props) {
   const [user, setUser] = React.useState(null);
@@ -93,6 +95,11 @@ export function AppSidebar(props) {
         title: "Marks",
         url: "/marks", // Link to the Marks page
         icon: Percent,
+      },
+      {
+        title: "Practicals",
+        url: "/pradd", // Link to the Practicals page
+        icon: BookOpenIcon,
       },
       {
         title: "Performance",

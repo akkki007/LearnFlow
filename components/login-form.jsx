@@ -42,7 +42,7 @@ export function LoginForm({ className, ...props }) {
       if (userRole === "admin") {
         router.push("/admin");
       } else if (userRole === "student") {
-        router.push("/student-dashboard");
+        router.push("/student");
       } else if (userRole === "teacher") {
         router.push("/teacher");
       }
@@ -73,7 +73,7 @@ export function LoginForm({ className, ...props }) {
       if (data.role === "admin") {
         router.push("/admin");
       } else if (data.role === "student") {
-        router.push("/student-dashboard");
+        router.push("/student");
       } else if (data.role === "teacher") {
         router.push("/teacher");
       }

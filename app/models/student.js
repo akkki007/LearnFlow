@@ -47,6 +47,23 @@ const studentSchema = new mongoose.Schema({
         enum: ["pending", "accepted", "declined"],
         default: "pending",
     },
+    practicals: [
+        {
+            practicalId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Practical", // Reference to the Practical schema
+                required: true,
+            },
+            status: {
+                type: String,
+                enum: ["in-progress", "completed"],
+                default: "in-progress",
+            },
+            completedAt: {
+                type: Date, // Timestamp when the practical was completed
+            },
+        },
+    ],
 });
 
 // Hash password before saving

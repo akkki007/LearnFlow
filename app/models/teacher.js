@@ -42,11 +42,10 @@ const teacherSchema = new mongoose.Schema({
         enum: ["pending", "accepted", "declined"],
         default: "pending",
     },
-    subject: {
+    subjects: [{
         type: String,
-        required: true,
-        default: "JavaScript",
-    },
+        required: true
+    }],
     createdAt: {
         type: Date,
         default: Date.now,

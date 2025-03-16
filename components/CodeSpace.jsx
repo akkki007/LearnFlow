@@ -28,7 +28,7 @@ const LANGUAGES = [
   { id: 75, name: "Kotlin", icon: "kt" },
 ];
 
-export default function CodeEditor() {
+export default function CodeSpace() {
   const [code, setCode] = useState("# Write your code here");
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -104,7 +104,7 @@ export default function CodeEditor() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-row lg:flex-col gap-6">
         {/* Code Editor Section */}
         <div className="flex-1 space-y-6">
           <Card className="border shadow-sm">
@@ -210,7 +210,7 @@ export default function CodeEditor() {
         </div>
 
         {/* Console Section */}
-        <div className="w-full lg:w-[400px] space-y-6">
+        <div className="w-full lg:w-full space-y-6">
           <Card className="border shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
