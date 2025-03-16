@@ -168,7 +168,7 @@ export default function CodeEditor() {
                 />
               </div>
             </CardContent>
-            <CardFooter className="pt-4 flex gap-2">
+            <CardFooter className="pt-4 flex flex-col sm:flex-row gap-2">
               <Button onClick={executeCode} disabled={isLoading} className="w-full sm:w-auto" size="lg">
                 {isLoading ? (
                   <span className="flex items-center gap-2">
