@@ -4,22 +4,22 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    if (!body.updatedRows || !body.date || !body.div) {
+    if (!body.updatedRows || !body.date || !body.division) {
       return Response.json(
         {
           error: "Missing required fields",
-          message: "updatedRows, date, and div are all required",
+          message: "updatedRows, date, and division are all required",
         },
         { status: 400 }
       );
     }
 
-    const { updatedRows, date, div } = body;
+    const { updatedRows, date, division } = body;
 
     const filteredRows = updatedRows.map((stud) => ({
       enroll: stud.EnRoll,
       ispresent: stud.isPresent,
-      division: div,
+      division: division,
       pracdates: date,
     }));
 
@@ -36,7 +36,7 @@ export async function POST(req) {
     // Insert into `daterecord`
     const { data: dateData, error: dateError } = await supabase
       .from("daterecord")
-      .insert([{ division: div, pracdates: date }]);
+      .insert([{ division: division, pracdates: date }]);
 
     if (dateError) {
       console.error("Error inserting date record:", dateError);

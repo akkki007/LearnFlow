@@ -17,9 +17,8 @@ export async function POST(req) {
     const { division, subject, marks } = body;
 
     const updatePromises = marks.map(async (row) => {
-      const { id, enroll, studentname, subject: rowSubject, division: rowDivision, ...scores } = row;
+      const { id, enroll, studentname, subject, division, ...scores } = row;
 
-      
       Object.keys(scores).forEach((key) => {
         scores[key] = Number(scores[key]) || 0;
       });
@@ -29,7 +28,7 @@ export async function POST(req) {
         .from("student_marks")
         .update(scores)
         .eq("enroll", enroll)
-        .eq("div", division)
+        .eq("division", division)
         .eq("subject", subject);
 
       if (error) {
