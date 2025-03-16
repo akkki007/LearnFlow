@@ -3,7 +3,6 @@ import connectDB from "@/app/utils/dbconnect";
 import student from "@/app/models/student";
 import teacher from "@/app/models/teacher";
 
-
 export async function POST(req) {
   await connectDB();
 
@@ -19,7 +18,7 @@ export async function POST(req) {
       email,
       password,
       role,
-      subject
+      subjects // Updated to accept an array of subjects
     } = body;
 
     if (!email || !password || !role) {
@@ -69,7 +68,7 @@ export async function POST(req) {
         status: "pending", // ⏳ Set status to pending
       });
     } else if (role === "teacher") {
-      if (!firstName || !lastName || !phoneNumber || !subject) {
+      if (!firstName || !lastName || !phoneNumber || !subjects || subjects.length === 0) {
         return NextResponse.json(
           { error: "All teacher fields are required" },
           { status: 400 }
@@ -84,7 +83,7 @@ export async function POST(req) {
         email,
         password,
         role,
-        subject,
+        subjects, // Updated to accept an array of subjects
         status: "pending", // ⏳ Set status to pending
       });
     }
