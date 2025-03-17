@@ -77,7 +77,7 @@ export async function POST(req) {
         marksData[index].studentname = students[index].studentname;
       }
     }
-    console.log(marksData);
+    //console.log(marksData);
     
     return Response.json(marksData, { status: 200 });
   } catch (error) {

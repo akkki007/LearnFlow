@@ -59,7 +59,6 @@ export default function Attendance() {
   const [rows, setRows] = useState([]);
   const [date, setDate] = useState(dayjs());
   const [division, setDivision] = useState("H3");
-  const [record, setRecord] = useState([]);
   const [isInsert, setInsert] = useState(true);
 
   useEffect(() => {
@@ -70,6 +69,7 @@ export default function Attendance() {
           division: division,
         });
         if (response.data.length === 0) {
+          setInsert(true);
           const studData = await axios.post("/api/attendance/stud", {
             division: division,
           });
@@ -81,6 +81,7 @@ export default function Attendance() {
           }));
           setRows(newRows);
         } else {
+          setInsert(false);
           const newRows = response.data.map((value, ind) => ({
             id: ind,
             studentname: value.studentname,
@@ -97,18 +98,6 @@ export default function Attendance() {
 
     fetchData();
   }, [date, division]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.post("/api/attendance/load");
-        setRecord(response.data.user);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
-  }, []);
 
   const handleSubmit = async () => {
     if (isInsert) {
