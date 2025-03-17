@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Play, Code, Terminal, FileCode, Moon, Sun, AlertCircle, CheckCircle2, Download } from "lucide-react";
 
 // Judge0 language IDs (example subset, you can add more)
@@ -94,9 +93,9 @@ export default function CodeSpace() {
   };
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-4 sm:space-y-6 p-2 sm:p-4">
       {/* Header */}
-      <div className="flex flex-col text-center space-y-2">
+      <div className="flex flex-col text-center space-y-2 px-2 sm:px-4">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">AI-Powered Code Editor</h1>
         <p className="text-sm sm:text-base text-muted-foreground">
           Write, execute, and debug code seamlessly with our intelligent editor.
@@ -104,7 +103,7 @@ export default function CodeSpace() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-row lg:flex-col gap-6">
+      <div className="flex flex-col gap-6">
         {/* Code Editor Section */}
         <div className="flex-1 space-y-6">
           <Card className="border shadow-sm">
@@ -139,11 +138,6 @@ export default function CodeSpace() {
                   </Select>
                 </div>
               </div>
-              {selectedLanguage && (
-                <Badge variant="outline" className="text-xs mt-2 sm:mt-0">
-                  {selectedLanguage.name}
-                </Badge>
-              )}
             </CardHeader>
             <CardContent className="p-0 overflow-hidden rounded-md">
               <div className="border rounded-md overflow-hidden">
@@ -164,7 +158,7 @@ export default function CodeSpace() {
                     lineNumbersMinChars: 3,
                     padding: { top: 16, bottom: 16 },
                   }}
-                  className="min-h-[400px]"
+                  className="min-h-[300px] sm:min-h-[400px]"
                 />
               </div>
             </CardContent>
@@ -236,7 +230,7 @@ export default function CodeSpace() {
                 <TabsContent value="input" className="p-4">
                   <Textarea
                     placeholder="Enter input here..."
-                    className="min-h-[200px] font-mono text-sm resize-none"
+                    className="min-h-[150px] sm:min-h-[200px] font-mono text-sm resize-none"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                   />
@@ -244,7 +238,7 @@ export default function CodeSpace() {
                 <TabsContent value="output" className="p-4">
                   <div
                     className={cn(
-                      "min-h-[200px] p-3 font-mono text-sm rounded-md border bg-muted/50",
+                      "min-h-[150px] sm:min-h-[200px] p-3 font-mono text-sm rounded-md border bg-muted/50",
                       status === "error" && "border-destructive text-destructive"
                     )}
                   >

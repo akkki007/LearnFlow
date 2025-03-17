@@ -139,11 +139,6 @@ export default function CodeEditor() {
                   </Select>
                 </div>
               </div>
-              {selectedLanguage && (
-                <Badge variant="outline" className="text-xs mt-2 sm:mt-0">
-                  {selectedLanguage.name}
-                </Badge>
-              )}
             </CardHeader>
             <CardContent className="p-0 overflow-hidden rounded-md">
               <div className="border rounded-md overflow-hidden">

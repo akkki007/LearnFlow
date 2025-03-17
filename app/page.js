@@ -14,20 +14,20 @@ import { useRouter } from "next/navigation";
 export default function Home() {
 
   const router = useRouter();
-   useEffect(() => {
-      const token = localStorage.getItem("token");
-      const userRole = localStorage.getItem("role");
+  //  useEffect(() => {
+  //     const token = localStorage.getItem("token");
+  //     const userRole = localStorage.getItem("role");
   
-      if (token && userRole) {
-        if (userRole === "admin") {
-          router.push("/admin");
-        } else if (userRole === "student") {
-          router.push("/student");
-        } else if (userRole === "teacher") {
-          router.push("/teacher");
-        }
-      }
-    }, [router]);
+  //     if (token && userRole) {
+  //       if (userRole === "admin") {
+  //         router.push("/admin");
+  //       } else if (userRole === "student") {
+  //         router.push("/student");
+  //       } else if (userRole === "teacher") {
+  //         router.push("/teacher");
+  //       }
+  //     }
+  //   }, [router]);
 
   return (
     <div className="bg-white">

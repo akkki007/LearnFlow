@@ -44,7 +44,7 @@ export default function Header() {
       >
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5">
-            <Image src="/logo.png" alt="EduForge" width={160} height={40} className="h-40 w-auto" />
+            <Image src="/logo.png" alt="learnflow" width={160} height={40} className="h-40 w-auto" />
           </Link>
         </div>
         <div className="flex lg:hidden">

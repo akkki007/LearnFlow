@@ -76,12 +76,12 @@ export default function Dashboard() {
           </SheetTrigger>
           <SheetContent side="left" className="w-72">
             <nav className="grid gap-2 text-lg font-medium">
-              <Link href="#" className="flex items-center gap-2 rounded-lg px-3 py-2 text-primary hover:bg-muted">
+              <Link href="/" className="flex items-center gap-2 rounded-lg px-3 py-2 text-primary hover:bg-muted">
                 <Home className="h-5 w-5" />
                 Home
               </Link>
               <Link
-                href="#"
+                href="/student"
                 className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-primary hover:bg-primary/20"
               >
                 <LayoutDashboard className="h-5 w-5" />
@@ -154,13 +154,13 @@ export default function Dashboard() {
         <aside className="hidden w-[250px] flex-col border-r bg-muted/40 md:flex">
           <nav className="grid gap-2 p-4 text-sm font-medium">
             <Link
-              href="#"
+              href="/"
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:bg-muted hover:text-primary"
             >
               <Home className="h-4 w-4" />
               Home
             </Link>
-            <Link href="#" className="flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2 text-primary">
+            <Link href="/student" className="flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2 text-primary">
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
             </Link>

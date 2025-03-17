@@ -85,7 +85,8 @@ export default function CodePractice() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+      {/* Header */}
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/student">
             <ArrowLeft className="h-5 w-5" />
@@ -94,7 +95,7 @@ export default function CodePractice() {
         </Button>
         <div className="flex items-center gap-2 font-semibold">
           <Code2 className="h-5 w-5" />
-          <span>Code Practice</span>
+          <span className="text-sm sm:text-base">Code Practice</span>
         </div>
         <div className="ml-auto flex items-center gap-2">
           {/* Dropdown to select practical */}
@@ -102,7 +103,7 @@ export default function CodePractice() {
             value={selectedPracticalNo.toString()}
             onValueChange={(value) => setSelectedPracticalNo(Number(value))}
           >
-            <SelectTrigger className="w-[280px]">
+            <SelectTrigger className="w-[180px] sm:w-[280px]">
               <SelectValue placeholder="Select Practical" />
             </SelectTrigger>
             <SelectContent>
@@ -115,17 +116,19 @@ export default function CodePractice() {
           </Select>
         </div>
       </header>
-      <div className="grid flex-1 md:grid-cols-2">
+
+      {/* Main Content */}
+      <div className="grid flex-1 grid-cols-1 md:grid-cols-2">
         {/* Left Side: Problem Description */}
         <div className="border-r">
-          <div className="p-4 md:p-6">
+          <div className="p-4 sm:p-6">
             <div className="flex flex-col gap-4">
               {isLoading ? (
                 <p>Loading practicals...</p>
               ) : selectedPractical ? (
                 <>
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold">{selectedPractical.title}</h2>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h2 className="text-xl sm:text-2xl font-bold">{selectedPractical.title}</h2>
                     <div className="flex items-center gap-2">
                       <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
                         {selectedPractical.difficulty || "Easy"}

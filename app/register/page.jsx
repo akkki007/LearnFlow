@@ -119,9 +119,9 @@ function RegisterPage() {
     <div className="flex min-h-screen flex-col lg:flex-row bg-gradient-to-br from-blue-50 to-indigo-50">
       {/* Left side - Image and branding */}
       <div className="w-full lg:w-1/2 p-6 lg:p-12 flex flex-col justify-center items-center relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
+        <div className="absolute mt-16 inset-0 z-0">
           <img
-            src="/placeholder.svg?height=1080&width=1920"
+            src="/logo.png"
             alt="Campus"
             className="w-full h-full object-cover opacity-20"
           />
@@ -130,7 +130,7 @@ function RegisterPage() {
           <div className="mb-6 inline-block p-3 bg-blue-100 rounded-full">
             <GraduationCap className="h-12 w-12 text-blue-600" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-blue-900 mb-4">Academia Institute</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-blue-900 mb-4">Academic Institute</h1>
           <p className="text-blue-700 mb-8 text-lg">
             Join our community of learners and educators to unlock your potential.
           </p>
