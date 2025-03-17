@@ -4,17 +4,17 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    if (!body.updatedRows || !body.date || !body.div) {
+    if (!body.updatedRows || !body.date || !body.division) {
       return Response.json(
         {
           error: "Missing required fields",
-          message: "updatedRows, date, and div are all required",
+          message: "updatedRows, date, and division are all required",
         },
         { status: 400 }
       );
     }
 
-    const { updatedRows, date, div } = body;
+    const { updatedRows, date, division } = body;
 
     const promises = updatedRows.map(async (row) => {
       const isPresent = row.isPresent ? true : false;
@@ -24,7 +24,7 @@ export async function POST(req) {
         .select("*")
         .eq("enroll", row.EnRoll)
         .eq("pracdates", date)
-        .eq("division", div);
+        .eq("division", division);
 
       if (error) throw error;
 
@@ -34,7 +34,7 @@ export async function POST(req) {
           .update({ ispresent: isPresent })
           .eq("enroll", row.EnRoll)
           .eq("pracdates", date)
-          .eq("division", div);
+          .eq("division", division);
       }
     });
 
