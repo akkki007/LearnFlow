@@ -63,7 +63,9 @@ export function AppSidebar(props) {
 
       // Set user details
       const name = decoded.email.split("@")[0];
-      const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name)}`;
+      const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(
+        name
+      )}`;
 
       setUser({
         name,

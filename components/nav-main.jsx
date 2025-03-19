@@ -1,4 +1,5 @@
 "use client";
+"use client";
 
 import Link from "next/link"; // Use Next.js's Link component
 import {
@@ -9,8 +10,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
+
 export function NavMain({ items }) {
   return (
+    <SidebarGroup>
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
@@ -25,6 +28,7 @@ export function NavMain({ items }) {
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
+    </SidebarGroup>
     </SidebarGroup>
   );
 }

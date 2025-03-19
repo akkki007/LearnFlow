@@ -99,7 +99,7 @@ export default function Bento() {
                   </div>
                   <div className="px-6 pb-14 pt-6">
                     <code className="text-white">
-                        {`import { Practical1, Practical2 } from "@bento/practicals";`}
+                      {`import { Practical1, Practical2 } from "@bento/practicals";`}
                     </code>
                   </div>
                 </div>

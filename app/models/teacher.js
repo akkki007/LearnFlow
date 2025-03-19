@@ -54,14 +54,15 @@ const teacherSchema = new mongoose.Schema({
 
 // Hash password before saving
 teacherSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next();
-    this.password = await bcrypt.hash(this.password, 10);
-    next();
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
 });
 
 // Compare password for login
 teacherSchema.methods.comparePassword = function (candidatePassword) {
-    return bcrypt.compare(candidatePassword, this.password);
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
-export default mongoose.models.Teacher || mongoose.model("Teacher", teacherSchema);
+export default mongoose.models.Teacher ||
+  mongoose.model("Teacher", teacherSchema);

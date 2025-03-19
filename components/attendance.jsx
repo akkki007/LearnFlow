@@ -1,3 +1,5 @@
+"use client";
+
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Button, Checkbox, useMediaQuery, useTheme } from "@mui/material";
 import axios from "axios";

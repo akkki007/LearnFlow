@@ -98,7 +98,7 @@ export function LoginForm({ className, ...props }) {
       className={cn("flex flex-col gap-6", className)}
       {...props}
     >
-      <div className="flex flex-col items-center gap-2 text-center">
+      <div className="flex flex-col text-blue-500 items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Login to your account</h1>
         <p className="text-sm text-muted-foreground">
           Enter your email below to login to your account
@@ -137,7 +137,10 @@ export function LoginForm({ className, ...props }) {
       <div className="grid gap-2">
         <div className="flex items-center">
           <Label htmlFor="password">Password</Label>
-          <Link href="/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
+          <Link
+            href="/forgot-password"
+            className="ml-auto text-sm underline-offset-4 hover:underline"
+          >
             Forgot your password?
           </Link>
         </div>
@@ -157,11 +160,13 @@ export function LoginForm({ className, ...props }) {
           </button>
         </div>
         {form.formState.errors.password && (
-          <p className="text-red-500">{form.formState.errors.password.message}</p>
+          <p className="text-red-500">
+            {form.formState.errors.password.message}
+          </p>
         )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={loading}>
+      <Button type="submit" className="w-full bg-blue-500" disabled={loading}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -195,10 +200,14 @@ export function LoginForm({ className, ...props }) {
 
       <div className="text-center text-sm">
         Don't have an account?{" "}
-        <Link href="/register" className="text-emerald-600 font-medium hover:text-emerald-800 hover:underline">
+        <Link
+          href="/register"
+          className="text-emerald-600 font-medium hover:text-emerald-800 hover:underline"
+        >
           Register
         </Link>
       </div>
     </form>
   );
 }
+
