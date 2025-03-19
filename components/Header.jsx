@@ -84,18 +84,12 @@ export default function Header() {
               >
                 Log in
               </Link>
-              <Link
-                href="/admin-login"
-                className="text-md/6 poppins-semibold font-semibold text-zinc-600 hover:text-zinc-900"
-              >
-                Admin Login
-              </Link>
             </>
           ) : (
             <>
               {isAdmin && (
                 <Link
-                  href="/admin-dashboard"
+                  href="/admin"
                   className="text-md/6 poppins-semibold font-semibold text-green-600 hover:text-green-800"
                 >
                   Admin Dashboard
@@ -165,12 +159,6 @@ export default function Header() {
                       className="text-md/6 poppins-semibold font-semibold text-gray-900"
                     >
                       Log in
-                    </Link>
-                    <Link
-                      href="/admin-login"
-                      className="text-md/6 poppins-semibold font-semibold text-gray-900"
-                    >
-                      Admin Login
                     </Link>
                   </>
                 ) : (

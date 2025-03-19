@@ -1,6 +1,6 @@
 function Hero() {
   return (
-    <div className="xl:flex xl:flex-row flex flex-col">
+    <div className="xl:flex my-10 xl:flex-row flex flex-col">
       <div className="relative isolate px-6 pt-14 lg:px-8">
         <div
           aria-hidden="true"

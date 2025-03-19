@@ -112,7 +112,7 @@ export default function CodeEditor() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                 <div className="flex items-center space-x-2">
                   <FileCode className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">Code Editor</CardTitle>
+                  <CardTitle className="text-lg sm:text-center -mx-10">Code Editor</CardTitle>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
                   <div className="flex items-center space-x-2">

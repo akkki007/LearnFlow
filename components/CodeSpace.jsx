@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Play, Code, Terminal, FileCode, Moon, Sun, AlertCircle, CheckCircle2, Download } from "lucide-react";
+import { Play, Code, Terminal, FileCode, Moon, Sun, AlertCircle, CheckCircle2, Download, Upload } from "lucide-react";
 
 // Judge0 language IDs (example subset, you can add more)
 const LANGUAGES = [
@@ -194,6 +194,10 @@ export default function CodeSpace() {
                     Run Code
                   </span>
                 )}
+              </Button>
+              <Button onClick={handleDownloadCode} className="w-full sm:w-auto" size="lg" variant="outline">
+                <Upload className="h-4 w-4 mr-2" />
+                Submit Practical
               </Button>
               <Button onClick={handleDownloadCode} className="w-full sm:w-auto" size="lg" variant="outline">
                 <Download className="h-4 w-4 mr-2" />

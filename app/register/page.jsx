@@ -130,7 +130,7 @@ function RegisterPage() {
           <div className="mb-6 inline-block p-3 bg-blue-100 rounded-full">
             <GraduationCap className="h-12 w-12 text-blue-600" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-blue-900 mb-4">Academic Institute</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-blue-900 mb-4 tracking-tighter">Learnflow</h1>
           <p className="text-blue-700 mb-8 text-lg">
             Join our community of learners and educators to unlock your potential.
           </p>
