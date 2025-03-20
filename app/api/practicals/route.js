@@ -6,9 +6,11 @@ import Practical from "@/app/models/practicals"; // Import the Practical model
 await connectDB();
 
 // GET: Fetch all practicals
-export async function GET() {
+export async function GET(request) {
+  const { query } = request;
+  const { userId } = query;
   try {
-    const practicals = await Practical.find({}); // Fetch all practicals from the database
+    const practicals = await Practical.find({ tid: userId }); // Fetch all practicals from the database associated with the given userId
     return NextResponse.json(practicals); // Return the practicals as JSON
   } catch (error) {
     return NextResponse.json(
@@ -21,11 +23,11 @@ export async function GET() {
 // POST: Create a new practical
 export async function POST(request) {
   try {
-    const { subject, practicalNo, title, description, relatedTheory } =
+    const { subject, practicalNo, title, description, relatedTheory, tid } =
       await request.json(); // Parse the request body
 
     // Validate required fields
-    if (!subject || !practicalNo || !title || !description || !relatedTheory) {
+    if (!subject || !practicalNo || !title || !description || !relatedTheory || !tid) {
       return NextResponse.json(
         { error: "All fields are required" },
         { status: 400 }
@@ -48,6 +50,7 @@ export async function POST(request) {
       title,
       description,
       relatedTheory,
+      tid,
     });
 
     await newPractical.save(); // Save the practical to the database

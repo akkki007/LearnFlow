@@ -10,6 +10,7 @@ import { FooterWithSocialLinks } from "@/components/Footer";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import { useRouter } from "next/navigation";
+import BackgroundPaths from "@/components/BackgroundPaths";
 
 export default function Home() {
 
@@ -32,7 +33,7 @@ export default function Home() {
   return (
     <div className="bg-white">
       <Header />;
-      <Hero />
+      <BackgroundPaths />
       <Cta />
       <Bento />
       <Colleges />

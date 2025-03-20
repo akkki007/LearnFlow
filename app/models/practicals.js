@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // Define the Practical Schema
 const practicalSchema = new mongoose.Schema({
@@ -35,6 +35,11 @@ const practicalSchema = new mongoose.Schema({
     type: Date,
     default: Date.now, // Automatically set the update date
   },
+  tid:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Teacher',
+    required: true
+  }
 });
 
 // Update the `updatedAt` field before saving the document
@@ -46,4 +51,4 @@ practicalSchema.pre('save', function (next) {
 // Create the Practical Model
 const Practical = mongoose.model('Practical', practicalSchema);
 
-module.exports = Practical;
+export default Practical

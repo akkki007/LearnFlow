@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import toast from "react-hot-toast"; // Import toast for notifications
+import {jwtDecode} from "jwt-decode";
 
 export default function AddPr() {
   const [practicals, setPracticals] = useState([]); // To store created practicals
@@ -25,16 +26,21 @@ export default function AddPr() {
     constraints: "",
   });
   const [isLoading, setIsLoading] = useState(false); // Loading state for form submission
-
+  const [userId, setUserId] = useState(null);
   // Fetch practicals on component mount
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      setUserId(decodedToken.id);
+    }
     fetchPracticals();
   }, []);
 
   // Fetch all practicals from the backend
-  const fetchPracticals = async () => {
+  const fetchPracticals = async (userId) => {
     try {
-      const response = await fetch("/api/practicals");
+      const response = await fetch(`/api/practicals?tid=${userId}`);
       const data = await response.json();
       setPracticals(data);
     } catch (error) {
@@ -55,6 +61,7 @@ export default function AddPr() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          tid: userId,
           subject: formData.subject,
           practicalNo: Number(formData.practicalNo), // Convert to number
           title: formData.title,
