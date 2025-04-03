@@ -175,7 +175,7 @@ export default function Attendance() {
         <Box
           sx={{
             minWidth: 120,
-            width: isMobile ? "100%" : "auto",
+            width: isMobile ? "30%" : "auto",
           }}
         >
           <InputLabel id="division-select-label">Division</InputLabel>
@@ -197,7 +197,7 @@ export default function Attendance() {
       <Box
         sx={{
           height: "60dvh",
-          width: "94%",
+          width: "100%",
           maxWidth: "1200px",
           mb: 3,
         }}

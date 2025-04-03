@@ -14,7 +14,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import Attendance from "@/components/attendance"
+import Attendance from "@/app/attendance/attendance"
 
 export default function Page() {
   return (

@@ -202,7 +202,7 @@ export default function Marks() {
       style={{
         margin: "0",
         height: "100%",
-        width: "95dvw",
+        width: "98%",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -214,7 +214,7 @@ export default function Marks() {
           display: "flex",
           gap: "20px",
           margin: "10px 0",
-          width: "90%",
+          width: "98%",
         }}
       >
         <Box sx={{ minWidth: 120 }}>
@@ -252,7 +252,7 @@ export default function Marks() {
         </Box>
       </div>
 
-      <Box sx={{ height: "70dvh", width: "90%" }}>
+      <Box sx={{ height: "70dvh", width: "90dvw" }}>
         <DataGrid
           rows={rows}
           columns={columns}
