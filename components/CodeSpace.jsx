@@ -13,18 +13,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Play, Code, Terminal, FileCode, Moon, Sun, AlertCircle, CheckCircle2, Download, Upload } from "lucide-react";
 
-// Judge0 language IDs (example subset, you can add more)
 const LANGUAGES = [
   { id: 71, name: "Python", icon: "py" },
   { id: 54, name: "C++", icon: "cpp" },
-  { id: 50, name: "C", icon: "c" },
-  { id: 62, name: "Java", icon: "java" },
   { id: 63, name: "JavaScript", icon: "js" },
-  { id: 51, name: "C#", icon: "cs" },
-  { id: 72, name: "Ruby", icon: "rb" },
-  { id: 73, name: "Go", icon: "go" },
-  { id: 74, name: "TypeScript", icon: "ts" },
-  { id: 75, name: "Kotlin", icon: "kt" },
 ];
 
 export default function CodeSpace() {
@@ -43,25 +35,27 @@ export default function CodeSpace() {
     setActiveTab("output");
 
     try {
-      const response = await axios.post("/api/execute", {
-        code,
-        input,
-        languageId: Number.parseInt(languageId), // Parse string to number
+      const response = await fetch("/api/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, input, languageId: Number.parseInt(languageId) }),
       });
 
-      setOutput(response.data.output);
+      const data = await response.json();
 
-      if (response.data.output.includes("error") || response.data.output.includes("Error")) {
+      if (data.error) {
         setStatus("error");
-        toast.error("Execution Error: Your code encountered an error during execution."); // Direct toast
+        setOutput(data.error);
+        toast.error(`Execution Error: ${data.error}`);
       } else {
         setStatus("success");
-        toast.success("Code Executed: Your code ran successfully!"); // Direct toast
+        setOutput(data.output);
+        toast.success("Code Executed: Your code ran successfully!");
       }
     } catch (error) {
       setStatus("error");
       setOutput(`Error: ${error instanceof Error ? error.message : "Unknown error occurred"}`);
-      toast.error(`Execution Failed: ${error instanceof Error ? error.message : "Unknown error"}`); // Direct toast
+      toast.error(`Execution Failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setIsLoading(false);
     }

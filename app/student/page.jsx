@@ -13,7 +13,7 @@ import {
   Settings,
   User,
 } from "lucide-react";
-
+import './page.css'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,7 +65,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col poppins-regular">
       <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
         <Sheet>
           <SheetTrigger asChild>

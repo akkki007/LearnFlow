@@ -82,7 +82,7 @@ export default function BackgroundPaths({ title = "Creating a learner community.
                       damping: 25,
                     }}
                     className="inline-block text-transparent bg-clip-text
-                                        bg-gradient-to-r from-blue-600 to-blue-400
+                                        bg-blue-600
                                         dark:from-white dark:to-white/80"
                   >
                     {letter}

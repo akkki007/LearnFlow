@@ -1,9 +1,10 @@
 import { createClient } from "redis";
 import Docker from "dockerode";
-import { writeFileSync, mkdirSync, rmSync, existsSync } from "fs";
+import { writeFileSync, mkdirSync, rmSync } from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 const { posix } = path;
+
 // Create Redis client
 const redisClient = createClient({ url: "redis://localhost:6379" });
 redisClient.on("error", (err) => console.error("Redis error:", err));
@@ -66,44 +67,40 @@ async function executeCode(submissionId, code, languageId, input) {
   tempDir = tempDir.replace(/\\/g, '/'); // Convert to Linux-style path
 
   console.log(`Creating tempDir: ${tempDir}`);
-  
   mkdirSync(tempDir, { recursive: true });
 
   try {
     // ✅ Write code to file
     const filename = `code${config.extension}`;
-    // After writing the file
-const filepath = posix.join(tempDir, filename);
-writeFileSync(filepath, code);
-
-// Log the file path and check if it exists
-console.log(`File written to: ${filepath}`);
+    const filepath = posix.join(tempDir, filename);
+    writeFileSync(filepath, code);
+    console.log(`File written to: ${filepath}`);
 
     // ✅ Write input to file (if provided)
+    let inputRedirect = "";
     if (input) {
       const inputFile = `${tempDir}/input.txt`;
       writeFileSync(inputFile, input);
+      inputRedirect = ` < /app/input.txt`;
+      console.log(`Input written to: ${inputFile}`);
     }
 
     // ✅ Ensure Docker image exists
     await ensureImageExists(config.image);
 
     // ✅ Prepare execution command
-    const execCommand = config.runCommand(`/app/${filename}`);
-    const inputRedirect = input ? ` < /app/input.txt` : "";
-    const fullCommand = `${execCommand}${inputRedirect}`;
-
-    console.log(`Running command: ${fullCommand}`);
+    const execCommand = `${config.runCommand(`/app/${filename}`)}${inputRedirect}`;
+    console.log(`Running command: ${execCommand}`);
 
     // ✅ Create Docker container
     const container = await docker.createContainer({
       Image: config.image,
-      Cmd: ["sh", "-c", fullCommand],
+      Cmd: ["/bin/sh", "-c", execCommand], // ✅ Fix: Pass as single string
       Tty: true,
       HostConfig: {
         Memory: 100 * 1024 * 1024, // 100 MB memory limit
         NetworkMode: "none", // No network access
-        Binds: [`${tempDir}:/app`], // ✅ Fix for mounting issue
+        Binds: [`${tempDir}:/app`], // ✅ Mounting tempDir to `/app`
       },
     });
 
@@ -160,6 +157,7 @@ console.log(`File written to: ${filepath}`);
     // ✅ Clean up temp directory
     try {
       rmSync(tempDir, { recursive: true, force: true });
+      console.log(`Temp directory removed: ${tempDir}`);
     } catch (err) {
       console.error("Error removing temp directory:", err);
     }

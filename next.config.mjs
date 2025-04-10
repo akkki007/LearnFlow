@@ -7,6 +7,7 @@ const nextConfig = {
               hostname: 'www.pccoepune.com',
           },
       ],
+      domains: ["hebbkx1anhila5yf.public.blob.vercel-storage.com"],
   },
 };
 

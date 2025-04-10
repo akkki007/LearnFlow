@@ -1,6 +1,8 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode"; // Using jwt-decode instead of jwt
 import {
   BookOpen,
   Percent,
@@ -10,7 +12,6 @@ import {
   FileUser,
   BookOpenIcon,
 } from "lucide-react";
-
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
@@ -21,124 +22,144 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 
-import { useRouter } from "next/navigation";
-import jwt from "jsonwebtoken";
-import { title } from "process";
+const navigationItems = [
+  {
+    title: "Attendance",
+    url: "/attendance",
+    icon: School,
+  },
+  {
+    title: "Marks",
+    url: "/marks",
+    icon: Percent,
+  },
+  {
+    title: "Practicals",
+    url: "/practicals",
+    icon: BookOpenIcon,
+  },
+  {
+    title: "Performance",
+    url: "#",
+    icon: FileUser,
+    items: [
+      { title: "Introduction", url: "#" },
+      { title: "Get Started", url: "#" },
+      { title: "Tutorials", url: "#" },
+      { title: "Changelog", url: "#" },
+    ],
+  },
+  {
+    title: "Settings",
+    url: "#",
+    icon: Settings2,
+    items: [
+      { title: "General", url: "#" },
+      { title: "Team", url: "#" },
+      { title: "Billing", url: "#" },
+      { title: "Limits", url: "#" },
+    ],
+  },
+];
+
+const teamData = [
+  {
+    name: "Government Polytechnic Pune",
+    logo: GalleryVerticalEnd,
+    plan: "Educational Institute",
+  },
+];
 
 export function AppSidebar(props) {
-  const [user, setUser] = React.useState(null);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
 
-  React.useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log("Token from localStorage:", token); // Debugging
+  useEffect(() => {
+    const validateTokenAndSetUser = () => {
+      try {
+        const token = localStorage.getItem("token");
+        
+        if (!token) {
+          throw new Error("No token found");
+        }
 
-    try {
-      const decoded = jwt.decode(token);
-      console.log("Decoded Token:", decoded); // Debugging
+        const decoded = jwtDecode(token);
+        
+        if (!decoded?.email || !decoded?.role) {
+          throw new Error("Invalid token structure");
+        }
 
-      if (!decoded || !decoded.email || !decoded.role) {
-        console.error("Invalid token structure");
+        // Check token expiry
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (decoded.exp && decoded.exp < currentTime) {
+          throw new Error("Token expired");
+        }
+
+        // Validate role
+        if (decoded.role !== "teacher") {
+          throw new Error("Unauthorized role");
+        }
+
+        // Set user details
+        const name = decoded.email.split("@")[0];
+        const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name)}`;
+
+        setUser({
+          name,
+          email: decoded.email,
+          avatar,
+        });
+        setLoading(false);
+      } catch (err) {
+        console.error("Authentication error:", err.message);
         localStorage.removeItem("token");
+        setError(err.message);
+        setLoading(false);
         router.push("/unauthorized");
-        return;
       }
+    };
 
-      // Check token expiry
-      const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
-      if (decoded.exp && decoded.exp < currentTime) {
-        console.error("Token expired");
-        localStorage.removeItem("token");
-        router.push("/unauthorized");
-        return;
-      }
-
-      // Validate role
-      if (decoded.role !== "teacher") {
-        console.error("Unauthorized role:", decoded.role);
-        router.push("/login");
-        return;
-      }
-
-      // Set user details
-      const name = decoded.email.split("@")[0];
-      const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(
-        name
-      )}`;
-
-      setUser({
-        name,
-        email: decoded.email,
-        avatar,
-      });
-    } catch (error) {
-      console.error("Invalid token:", error.message);
-      localStorage.removeItem("token"); // Clear invalid token
-      router.push("/unauthorized");
-    }
+    validateTokenAndSetUser();
   }, [router]);
 
-  const data = {
-    teams: [
-      {
-        name: "Government Polytechnic Pune",
-        logo: GalleryVerticalEnd,
-        plan: "Educational Institute",
-      },
-    ],
-    navMain: [
-      {
-        title: "Attendance",
-        url: "/attendance", // Link to the Attendance page
-        icon: School,
-      },
-      {
-        title: "Marks",
-        url: "/marks", // Link to the Marks page
-        icon: Percent,
-      },
-      {
-        title: "Practicals",
-        url: "/pradd", // Link to the Practicals page
-        icon: BookOpenIcon,
-      },
-      {
-        title: "Performance",
-        url: "#",
-        icon: FileUser,
-        items: [
-          { title: "Introduction", url: "#" },
-          { title: "Get Started", url: "#" },
-          { title: "Tutorials", url: "#" },
-          { title: "Changelog", url: "#" },
-        ],
-      },
-      {
-        title: "Settings",
-        url: "#",
-        icon: Settings2,
-        items: [
-          { title: "General", url: "#" },
-          { title: "Team", url: "#" },
-          { title: "Billing", url: "#" },
-          { title: "Limits", url: "#" },
-        ],
-      },
-    ],
-  };
+  if (loading) {
+    return (
+      <div className="flex flex-col h-full p-4 space-y-4">
+        <Skeleton className="h-12 w-full rounded-md" />
+        <div className="space-y-2">
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-md" />
+          ))}
+        </div>
+        <Skeleton className="h-16 w-full rounded-md mt-auto" />
+      </div>
+    );
+  }
 
-  if (!user) {
-    return <div className="text-center text-red-500">Unauthorized Access</div>;
+  if (error || !user) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+        <div className="text-red-500 font-medium mb-2">
+          Unauthorized Access
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {error || "Please login with teacher credentials"}
+        </p>
+      </div>
+    );
   }
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher teams={teamData} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navigationItems} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />
