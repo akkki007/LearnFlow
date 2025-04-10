@@ -90,7 +90,7 @@ function RegisterPage() {
 
   async function onSubmit(values) {
     setLoading(true);
-
+  
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -99,17 +99,28 @@ function RegisterPage() {
         },
         body: JSON.stringify(values),
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
-        throw new Error(data.error || "Failed to register");
+        // Handle different error response formats
+        const errorMessage = data.message || 
+                           data.error || 
+                           (data.errors ? data.errors.join(', ') : null) || 
+                           "Failed to register";
+        throw new Error(errorMessage);
       }
-
-      toast.success(data.message);
+  
+      toast.success(data.message || "Registration successful!");
       router.push("/login");
     } catch (error) {
-      toast.error(error.message || "An error occurred during registration.");
+      // Show detailed error message
+      toast.error(error.message || "An error occurred during registration.", {
+        duration: 4000, // Show for 4 seconds
+      });
+      
+      // Log the full error for debugging
+      console.error("Registration error:", error);
     } finally {
       setLoading(false);
     }

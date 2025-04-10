@@ -12,63 +12,82 @@ export async function GET(req) {
     const students = await student.find({ status: "pending" });
     const teachers = await teacher.find({ status: "pending" });
 
-    return new Response(JSON.stringify({ students, teachers }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return Response.json({ students, teachers });
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error fetching pending users:", error);
+    return Response.json(
+      { error: "Failed to fetch pending users" },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(req) {
   try {
     await connectDB();
+    const body = await req.json();
+    console.log("Received POST body:", body); // ✅ Debug log
 
-    const { id, role } = await req.json();
+    const { id, role } = body;
 
-    let user;
-    if (role === "student") {
-      user = await student.findById(id);
-    } else if (role === "teacher") {
-      user = await teacher.findById(id);
+    if (!id || !role) {
+      return Response.json(
+        { error: "Both id and role are required" },
+        { status: 400 }
+      );
     }
+
+    const Model = role === "student" ? student : teacher;
+    const user = await Model.findByIdAndUpdate(
+      id,
+      { status: "accepted" },
+      { new: true }
+    );
 
     if (!user) {
-      return new Response(JSON.stringify({ error: "User not found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+      return Response.json(
+        { error: "User not found or already processed" },
+        { status: 404 }
+      );
     }
 
-    user.status = "accepted";
-    await user.save();
+    // Send email
+    try {
+      const msg = {
+        to: user.email,
+        from: process.env.SENDGRID_FROM_EMAIL || "akshaynazare3@gmail.com",
+        subject: "Your Learnflow Account Has Been Approved",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2563eb;">Account Approved</h2>
+            <p>Dear ${user.fullname || user.firstName},</p>
+            <p>Your Learnflow account has been approved by the administrator.</p>
+            <p>You can now log in and access all features.</p>
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+              <p>Best regards,<br>The Learnflow Team</p>
+            </div>
+          </div>
+        `,
+        text: `Your Learnflow account has been approved. You can now log in at ${process.env.NEXTAUTH_URL}`
+      };
 
+      await sgMail.send(msg);
+      console.log(`Approval email sent to ${user.email}`);
+    } catch (emailError) {
+      console.error("Error sending approval email:", emailError);
+    }
 
-    // ✅ Send approval email using SendGrid
-    const msg = {
-      to: user.email,
-      from: "akshaynazare3@gmail.com",
-      subject: "Account Approved",
-      text: `Your account has been approved.`,
-      html: `<p>Your account has been approved. You can now login.</p>`,
-    };
-
-    await sgMail.send(msg);
-    console.log("User approved and notified");
-    
-    return new Response(
-      JSON.stringify({ message: "User approved and notified" }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
-  } catch (error) {
-    console.error("Error approving user:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
+    return Response.json({
+      success: true,
+      message: "User approved successfully",
+      userId: user._id,
+      email: user.email
     });
+  } catch (error) {
+    console.error("Error in approval process:", error);
+    return Response.json(
+      { error: "Internal server error during approval" },
+      { status: 500 }
+    );
   }
 }

@@ -18,23 +18,63 @@ export default function Header() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState(""); // "admin", "student", or "teacher"
 
   useEffect(() => {
-    const token = document.cookie.includes("jwt=");
+    const token = localStorage.getItem("token");
+  
     if (token) {
       setIsAuthenticated(true);
-      setIsAdmin(document.cookie.includes("adminToken="));
+  
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setRole(payload.role); // "admin", "student", or "teacher"
+      } catch (error) {
+        console.error("Failed to decode JWT from localStorage", error);
+      }
     }
   }, []);
+  
 
   const handleLogout = () => {
-    document.cookie = "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-    document.cookie =
-      "adminToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    localStorage.removeItem("token"); // ✅ Clear the token from localStorage
     setIsAuthenticated(false);
-    setIsAdmin(false);
-    router.push("/");
+    setRole("");
+    router.push("/"); // Redirect to home
+  };
+  
+  const renderDashboardLink = () => {
+    switch (role) {
+      case "admin":
+        return (
+          <Link
+            href="/admin"
+            className="text-md/6 poppins-semibold font-semibold text-green-600 hover:text-green-800"
+          >
+            Admin Dashboard
+          </Link>
+        );
+      case "student":
+        return (
+          <Link
+            href="/student"
+            className="text-md/6 poppins-semibold font-semibold text-green-600 hover:text-green-800"
+          >
+            Student Dashboard
+          </Link>
+        );
+      case "teacher":
+        return (
+          <Link
+            href="/teacher"
+            className="text-md/6 poppins-semibold font-semibold text-green-600 hover:text-green-800"
+          >
+            Teacher Dashboard
+          </Link>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -87,14 +127,7 @@ export default function Header() {
             </>
           ) : (
             <>
-              {isAdmin && (
-                <Link
-                  href="/admin"
-                  className="text-md/6 poppins-semibold font-semibold text-green-600 hover:text-green-800"
-                >
-                  Admin Dashboard
-                </Link>
-              )}
+              {renderDashboardLink()}
               <button
                 onClick={handleLogout}
                 className="text-md/6 poppins-semibold font-semibold text-red-600 hover:text-red-800"
@@ -105,6 +138,7 @@ export default function Header() {
           )}
         </div>
       </nav>
+
       {/* Mobile Menu */}
       <Dialog
         open={mobileMenuOpen}
@@ -163,14 +197,7 @@ export default function Header() {
                   </>
                 ) : (
                   <>
-                    {isAdmin && (
-                      <Link
-                        href="/admin-dashboard"
-                        className="text-md/6 poppins-semibold font-semibold text-green-600"
-                      >
-                        Admin Dashboard
-                      </Link>
-                    )}
+                    {renderDashboardLink()}
                     <button
                       onClick={handleLogout}
                       className="text-md/6 poppins-semibold font-semibold text-red-600"

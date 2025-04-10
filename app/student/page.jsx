@@ -29,11 +29,45 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 export default function Dashboard() {
 
   const [user, setUser] = useState({});
   const router = useRouter();
+  const [practicals, setPracticals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("all");
+
+  useEffect(() => {
+    const fetchPracticals = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const userId = jwtDecode(token).id;
+        const res = await fetch(`/api/dashboard/prac?studentId=${userId}`);
+        const data = await res.json();
+        
+        setPracticals(data);
+      } catch (error) {
+        console.error("Error fetching practicals:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchPracticals();
+  }, []);
+
+  const filteredPracticals = practicals.filter(practical => {
+    if (activeTab === "all") return true;
+    return practical.status === activeTab;
+  });
+  const deadlinePracticals = practicals.filter(practical =>
+    ["pending", "approved"].includes(practical.status)
+  );
+  
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -57,6 +91,19 @@ export default function Dashboard() {
       }
     }
   }, [router]);
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "Completed":
+        return <Badge className="bg-green-500">Completed</Badge>;
+      case "Pending":
+        return <Badge className="bg-yellow-500">Pending</Badge>;
+      case "Issue":
+        return <Badge className="bg-red-500">Needs Fix</Badge>;
+      default:
+        return <Badge variant="outline">Not Started</Badge>;
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -127,7 +174,7 @@ export default function Dashboard() {
         </Sheet>
         <Link href="#" className="flex items-center gap-2 font-semibold">
           <BookOpen className="h-6 w-6" />
-          <span>AcademyHub</span>
+          <span>Learnflow</span>
         </Link>
         <div className="ml-auto flex items-center gap-4">
           <Button variant="outline" size="icon">
@@ -319,33 +366,36 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                      <Calendar className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">Algorithm Assignment #3</p>
-                      <p className="text-sm text-muted-foreground">Due in 2 days</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
-                      <Calendar className="h-5 w-5 text-blue-500" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">Web Dev Project Milestone</p>
-                      <p className="text-sm text-muted-foreground">Due in 5 days</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10">
-                      <Calendar className="h-5 w-5 text-orange-500" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">Database Midterm Exam</p>
-                      <p className="text-sm text-muted-foreground">In 1 week</p>
-                    </div>
-                  </div>
+                  {loading ? (
+                    <>
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                    </>
+                  ) : (
+                    <>
+                    {deadlinePracticals.map((practical) => (
+  <div key={practical._id} className="flex items-center gap-4">
+    <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+      practical.status === "pending" ? "bg-yellow-500/10" : "bg-green-500/10"
+    }`}>
+      <Calendar className={`h-5 w-5 ${
+        practical.status === "pending" ? "text-yellow-500" : "text-green-500"
+      }`} />
+    </div>
+    <div className="space-y-1">
+      <p className="text-sm font-medium leading-none">
+        {practical.title} (Practical {practical.practicalNo})
+      </p>
+      <p className="text-sm text-muted-foreground">
+        {practical.subject} - {practical.status.charAt(0).toUpperCase() + practical.status.slice(1)}
+      </p>
+    </div>
+  </div>
+))}
+
+                    </>
+                  )}
                 </div>
               </CardContent>
               <CardFooter>
@@ -356,136 +406,76 @@ export default function Dashboard() {
             </Card>
           </div>
           <div className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Coding Activity</CardTitle>
-                <CardDescription>Your progress in coding challenges</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="all">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="all">All Challenges</TabsTrigger>
-                    <TabsTrigger value="completed">Completed</TabsTrigger>
-                    <TabsTrigger value="in-progress">In Progress</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="all" className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Two Sum</CardTitle>
-                          <CardDescription className="text-xs">Easy</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                            <span className="text-xs">Completed</span>
-                          </div>
-                        </CardContent>
-                        <CardFooter className="pt-0">
-                          <Button variant="outline" size="sm" className="w-full" asChild>
-                            <Link href="/code-practice">View Challenge</Link>
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Valid Parentheses</CardTitle>
-                          <CardDescription className="text-xs">Easy</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                            <span className="text-xs">Completed</span>
-                          </div>
-                        </CardContent>
-                        <CardFooter className="pt-0">
-                          <Button variant="outline" size="sm" className="w-full">
-                            View Challenge
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Merge Intervals</CardTitle>
-                          <CardDescription className="text-xs">Medium</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                            <span className="text-xs">In Progress</span>
-                          </div>
-                        </CardContent>
-                        <CardFooter className="pt-0">
-                          <Button variant="outline" size="sm" className="w-full">
-                            Continue
-                          </Button>
-                        </CardFooter>
-                      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Practicals</CardTitle>
+          <CardDescription>Track your practical submissions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="Pending">Pending</TabsTrigger>
+              <TabsTrigger value="Completed">Completed</TabsTrigger>
+            </TabsList>
+            
+            {loading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
+              </div>
+            ) : (
+              <TabsContent value={activeTab}>
+                <div className="space-y-4">
+                  {filteredPracticals.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No practicals found
                     </div>
-                  </TabsContent>
-                  <TabsContent value="completed">
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      <Card>
+                  ) : (
+                    filteredPracticals.map((practical) => (
+                      <Card key={practical._id}>
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Two Sum</CardTitle>
-                          <CardDescription className="text-xs">Easy</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                            <span className="text-xs">Completed</span>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle className="text-lg">
+                                Practical {practical.practicalNo}: {practical.title}
+                              </CardTitle>
+                              <CardDescription>
+                                {practical.subject}
+                              </CardDescription>
+                            </div>
+                            {getStatusBadge(practical.status)}
                           </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm line-clamp-2">
+                            {practical.description}
+                          </p>
                         </CardContent>
-                        <CardFooter className="pt-0">
-                          <Button variant="outline" size="sm" className="w-full">
-                            View Challenge
+                        <CardFooter>
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            asChild
+                          >
+                            <Link href={`/code-practice`}>
+                              {practical.status === "Not Started" 
+                                ? "Start Practical" 
+                                : "View Details"}
+                            </Link>
                           </Button>
                         </CardFooter>
                       </Card>
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Valid Parentheses</CardTitle>
-                          <CardDescription className="text-xs">Easy</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                            <span className="text-xs">Completed</span>
-                          </div>
-                        </CardContent>
-                        <CardFooter className="pt-0">
-                          <Button variant="outline" size="sm" className="w-full">
-                            View Challenge
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="in-progress">
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Merge Intervals</CardTitle>
-                          <CardDescription className="text-xs">Medium</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                            <span className="text-xs">In Progress</span>
-                          </div>
-                        </CardContent>
-                        <CardFooter className="pt-0">
-                          <Button variant="outline" size="sm" className="w-full">
-                            Continue
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+            )}
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
         </main>
       </div>
     </div>

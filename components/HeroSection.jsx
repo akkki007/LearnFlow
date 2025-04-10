@@ -23,9 +23,7 @@ export function HeroSection() {
             transition={{ delay: 0.5, duration: 1.5 }}
             className="text-4xl md:text-6xl mt-7 font-bold mb-6 tracking-tight"
           >
-            Protect Your Privacy, Share What
-            <br />
-            Matters
+            Empower Learning with Smart Code Execution & Academic Control
           </motion.h1>
 
           {/* Slide animation for the paragraph */}
@@ -35,8 +33,7 @@ export function HeroSection() {
             transition={{ delay: 0.8, duration: 1.5 }}
             className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto"
           >
-            Easily crop out sensitive information on your screen during work calls. Keep your focus on what you want to
-            share while maintaining full control over your privacy.
+            Seamlessly write, run, and debug code while managing courses, dashboards, and user roles — all in one AI-powered academic platform. Perfect for students, teachers, and admins to stay connected and in control.
           </motion.p>
 
           {/* Bounce animation for the buttons */}

@@ -18,86 +18,134 @@ export async function POST(req) {
       email,
       password,
       role,
-      subjects // Updated to accept an array of subjects
+      subjects = [] // Default empty array
     } = body;
 
+    // Validate required fields
     if (!email || !password || !role) {
       return NextResponse.json(
-        { error: "All fields are required" },
+        { 
+          success: false,
+          error: "Missing required fields",
+          details: {
+            email: !email ? "Email is required" : undefined,
+            password: !password ? "Password is required" : undefined,
+            role: !role ? "Role is required" : undefined
+          }
+        },
         { status: 400 }
       );
     }
 
-    // 🚫 Block admin registration
+    // Block admin registration
     if (role === "admin") {
       return NextResponse.json(
-        { error: "Admin registration not allowed" },
+        { 
+          success: false,
+          error: "Admin registration is not allowed",
+          code: "ADMIN_REGISTRATION_DISABLED"
+        },
         { status: 403 }
       );
     }
 
-    // ✅ Check if user already exists
-    const existingUser =
-      role === "student"
-        ? await student.findOne({ email })
-        : await teacher.findOne({ email });
+    // Check if user exists
+    const existingUser = role === "student" 
+      ? await student.findOne({ email })
+      : await teacher.findOne({ email });
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "User already exists" },
-        { status: 400 }
+        { 
+          success: false,
+          error: "User already exists",
+          code: "USER_EXISTS",
+          email // Return the conflicting email
+        },
+        { status: 409 } // 409 Conflict is more appropriate
       );
-    }  
+    }
 
-    let newUser;
+    // Handle role-specific validation
     if (role === "student") {
       if (!fullname || !enrollmentNo || !division) {
         return NextResponse.json(
-          { error: "Fullname, Enrollment No and Division are required for students" },
+          { 
+            success: false,
+            error: "Student registration incomplete",
+            details: {
+              fullname: !fullname ? "Full name is required" : undefined,
+              enrollmentNo: !enrollmentNo ? "Enrollment number is required" : undefined,
+              division: !division ? "Division is required" : undefined
+            }
+          },
           { status: 400 }
         );
       }
+    } else if (role === "teacher") {
+      if (!firstName || !lastName || !phoneNumber || subjects.length === 0) {
+        return NextResponse.json(
+          { 
+            success: false,
+            error: "Teacher registration incomplete",
+            details: {
+              firstName: !firstName ? "First name is required" : undefined,
+              lastName: !lastName ? "Last name is required" : undefined,
+              phoneNumber: !phoneNumber ? "Phone number is required" : undefined,
+              subjects: subjects.length === 0 ? "At least one subject is required" : undefined
+            }
+          },
+          { status: 400 }
+        );
+      }
+    }
 
-      newUser = new student({
+    // Create new user
+    const userData = {
+      email,
+      password,
+      role,
+      status: "pending"
+    };
+
+    if (role === "student") {
+      Object.assign(userData, {
         fullname,
         enrollmentNo,
-        division,
-        email,
-        password,
-        role,
-        status: "pending", // ⏳ Set status to pending
+        division
       });
-    } else if (role === "teacher") {
-      if (!firstName || !lastName || !phoneNumber || !subjects || subjects.length === 0) {
-        return NextResponse.json(
-          { error: "All teacher fields are required" },
-          { status: 400 }
-        );
-      }
-
-      newUser = new teacher({
+    } else {
+      Object.assign(userData, {
         firstName,
         lastName,
-        fullname: `${firstName} ${lastName}`, // ✅ Create fullname from firstName + lastName
+        fullname: `${firstName} ${lastName}`,
         phoneNumber,
-        email,
-        password,
-        role,
-        subjects, // Updated to accept an array of subjects
-        status: "pending", // ⏳ Set status to pending
+        subjects
       });
     }
 
+    const Model = role === "student" ? student : teacher;
+    const newUser = new Model(userData);
     await newUser.save();
 
     return NextResponse.json(
-      { message: "Account created. Awaiting admin approval." },
+      { 
+        success: true,
+        message: "Account created. Awaiting admin approval.",
+        userId: newUser._id 
+      },
       { status: 201 }
     );
+
   } catch (error) {
-    console.error("Error during registration:", error);
+    console.error("Registration error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { 
+        success: false,
+        error: error.message || "Registration failed",
+        code: "INTERNAL_ERROR",
+        ...(process.env.NODE_ENV === "development" && { stack: error.stack })
+      },
       { status: 500 }
     );
   }

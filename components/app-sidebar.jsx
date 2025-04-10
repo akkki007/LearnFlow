@@ -2,124 +2,86 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode"; // Using jwt-decode instead of jwt
+import { jwtDecode } from "jwt-decode";
 import {
   BookOpen,
   Percent,
-  GalleryVerticalEnd,
   School,
   Settings2,
   FileUser,
   BookOpenIcon,
+  Home,
+  LayoutDashboard,
+  CalendarDays,
+  MessageSquare,
+  LogOut,
 } from "lucide-react";
-import { NavMain } from "@/components/nav-main";
-import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-} from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
-const navigationItems = [
-  {
-    title: "Attendance",
-    url: "/attendance",
-    icon: School,
-  },
-  {
-    title: "Marks",
-    url: "/marks",
-    icon: Percent,
-  },
-  {
-    title: "Practicals",
-    url: "/practicals",
-    icon: BookOpenIcon,
-  },
-  {
-    title: "Performance",
-    url: "#",
-    icon: FileUser,
-    items: [
-      { title: "Introduction", url: "#" },
-      { title: "Get Started", url: "#" },
-      { title: "Tutorials", url: "#" },
-      { title: "Changelog", url: "#" },
-    ],
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings2,
-    items: [
-      { title: "General", url: "#" },
-      { title: "Team", url: "#" },
-      { title: "Billing", url: "#" },
-      { title: "Limits", url: "#" },
-    ],
-  },
-];
-
-const teamData = [
-  {
-    name: "Government Polytechnic Pune",
-    logo: GalleryVerticalEnd,
-    plan: "Educational Institute",
-  },
-];
-
-export function AppSidebar(props) {
+export function AppSidebar() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const router = useRouter();
+
+  // Keep all the original navigation items
+  const navigationItems = [
+    {
+      title: "Home",
+      url: "/",
+      icon: Home,
+    },
+    {
+      title: "Attendance",
+      url: "/attendance",
+      icon: School,
+    },
+    {
+      title: "Marks",
+      url: "/marks",
+      icon: Percent,
+    },
+    {
+      title: "Practicals",
+      url: "/practicals",
+      icon: BookOpenIcon,
+      items:[
+        { title: "Add", url: "/pradd" },
+      ]
+    },
+    {
+      title: "Schedule",
+      url: "/schedule",
+      icon: CalendarDays,
+    },
+    {
+      title: "Messages",
+      url: "/messages",
+      icon: MessageSquare,
+     
+    },
+    
+  ];
 
   useEffect(() => {
     const validateTokenAndSetUser = () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
         
-        if (!token) {
-          throw new Error("No token found");
-        }
-
         const decoded = jwtDecode(token);
+        if (!decoded?.email) throw new Error("Invalid token");
         
-        if (!decoded?.email || !decoded?.role) {
-          throw new Error("Invalid token structure");
-        }
-
-        // Check token expiry
-        const currentTime = Math.floor(Date.now() / 1000);
-        if (decoded.exp && decoded.exp < currentTime) {
-          throw new Error("Token expired");
-        }
-
-        // Validate role
-        if (decoded.role !== "teacher") {
-          throw new Error("Unauthorized role");
-        }
-
-        // Set user details
-        const name = decoded.email.split("@")[0];
-        const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name)}`;
-
         setUser({
-          name,
+          name: decoded.email.split("@")[0],
           email: decoded.email,
-          avatar,
+          avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(decoded.email.split("@")[0])}`,
         });
         setLoading(false);
       } catch (err) {
         console.error("Authentication error:", err.message);
         localStorage.removeItem("token");
-        setError(err.message);
         setLoading(false);
-        router.push("/unauthorized");
+        router.push("/login");
       }
     };
 
@@ -128,43 +90,73 @@ export function AppSidebar(props) {
 
   if (loading) {
     return (
-      <div className="flex flex-col h-full p-4 space-y-4">
-        <Skeleton className="h-12 w-full rounded-md" />
-        <div className="space-y-2">
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full rounded-md" />
-          ))}
-        </div>
-        <Skeleton className="h-16 w-full rounded-md mt-auto" />
-      </div>
-    );
-  }
-
-  if (error || !user) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-        <div className="text-red-500 font-medium mb-2">
-          Unauthorized Access
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {error || "Please login with teacher credentials"}
-        </p>
+      <div className="w-64 h-full border-r p-4 space-y-4">
+        {[...Array(navigationItems.length)].map((_, i) => (
+          <div key={i} className="h-10 bg-gray-100 rounded-md animate-pulse" />
+        ))}
       </div>
     );
   }
 
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={teamData} />
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={navigationItems} />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={user} />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
+    <div className="w-64 h-full border-r flex flex-col">
+      <div className="p-4 border-b">
+        <h1 className="text-xl font-bold">AcademyHub</h1>
+      </div>
+      
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {navigationItems.map((item) => (
+          <div key={item.title}>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3"
+              onClick={() => router.push(item.url)}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.title}
+            </Button>
+            
+            {/* Render sub-items if they exist */}
+            {item.items && item.items.map((subItem) => (
+              <Button
+                key={subItem.title}
+                variant="ghost"
+                className="w-full justify-start gap-3 pl-12"
+                onClick={() => router.push(subItem.url)}
+              >
+                {subItem.title}
+              </Button>
+            ))}
+          </div>
+        ))}
+      </nav>
+
+      <div className="p-4 border-t">
+        {user && (
+          <div className="flex items-center gap-3 mb-4">
+            <img 
+              src={user.avatar} 
+              alt={user.name} 
+              className="h-8 w-8 rounded-full" 
+            />
+            <div>
+              <p className="text-sm font-medium">{user.name}</p>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
+            </div>
+          </div>
+        )}
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-3"
+          onClick={() => {
+            localStorage.removeItem("token");
+            router.push("/login");
+          }}
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
+      </div>
+    </div>
   );
 }
