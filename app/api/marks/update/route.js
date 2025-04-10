@@ -18,6 +18,7 @@ export async function POST(req) {
 
     const updatePromises = marks.map(async (row) => {
       const { id, enroll, studentname, subject, division, ...scores } = row;
+      console.log(scores);
 
       Object.keys(scores).forEach((key) => {
         scores[key] = Number(scores[key]) || 0;

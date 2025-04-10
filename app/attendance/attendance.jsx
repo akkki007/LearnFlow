@@ -20,13 +20,13 @@ export default function Attendance() {
       field: "studentname",
       headerName: "Name",
       type: "string",
-      width: isMobile ? 100 : 120, // Adjust width for mobile
+      width: isMobile ? 122 : 130,
       editable: false,
     },
     {
       field: "EnRoll",
       headerName: "EnRoll",
-      width: isMobile ? 90 : 110, // Adjust width for mobile
+      width: isMobile ? 118 : 122,
       type: "string",
       editable: false,
     },
@@ -41,27 +41,40 @@ export default function Attendance() {
           />
         );
       },
-      width: isMobile ? 100 : 140, // Adjust width for mobile
+      width: isMobile ? 123 : 130,
       editable: true,
     },
   ];
 
   function handleChange(id) {
     return (event) => {
-      const newRows = rows.map((row) => {
-        if (row.id === id) {
-          return { ...row, isPresent: event.target.checked };
-        }
-        return row;
+      setRows((prevRows) => {
+        const newRows = prevRows.map((row) =>
+          row.id === id ? { ...row, ispresent: event.target.checked } : row
+        );
+
+        setChangedRows((prev) => {
+          const updatedRow = newRows.find((row) => row.id === id);
+          const existingIndex = prev.findIndex((row) => row.id === id);
+
+          if (existingIndex >= 0) {
+            const newChangedRows = [...prev];
+            newChangedRows[existingIndex] = updatedRow;
+            return newChangedRows;
+          } else {
+            return [...prev, updatedRow];
+          }
+        });
+
+        return newRows;
       });
-      setRows(newRows);
     };
   }
 
   const [rows, setRows] = useState([]);
+  const [changedRows, setChangedRows] = useState([]);
   const [date, setDate] = useState(dayjs());
   const [division, setDivision] = useState("H3");
-  const [record, setRecord] = useState([]);
   const [isInsert, setInsert] = useState(true);
 
   useEffect(() => {
@@ -72,6 +85,7 @@ export default function Attendance() {
           division: division,
         });
         if (response.data.length === 0) {
+          setInsert(true);
           const studData = await axios.post("/api/attendance/stud", {
             division: division,
           });
@@ -83,6 +97,7 @@ export default function Attendance() {
           }));
           setRows(newRows);
         } else {
+          setInsert(false);
           const newRows = response.data.map((value, ind) => ({
             id: ind,
             studentname: value.studentname,
@@ -100,18 +115,6 @@ export default function Attendance() {
     fetchData();
   }, [date, division]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.post("/api/attendance/load");
-        setRecord(response.data.user);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
-  }, []);
-
   const handleSubmit = async () => {
     if (isInsert) {
       try {
@@ -127,7 +130,7 @@ export default function Attendance() {
     } else {
       try {
         await axios.post("/api/attendance/update", {
-          updatedRows: rows,
+          updatedRows: changedRows,
           date: date.format("YYYY-MM-DD"),
           div: division,
         });
@@ -146,18 +149,17 @@ export default function Attendance() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        p: isMobile ? 1 : 3, // Adjust padding for mobile
+        p: isMobile ? 1 : 3,
       }}
     >
-      {/* Date Picker and Division Select */}
       <Box
         sx={{
           display: "flex",
-          flexDirection: isMobile ? "column" : "row", // Stack vertically on mobile
-          gap: isMobile ? 2 : 4, // Adjust gap for mobile
+          flexDirection: isMobile ? "column" : "row",
+          gap: isMobile ? 2 : 4,
           alignItems: "center",
           width: "100%",
-          maxWidth: "800px", // Limit width for larger screens
+          maxWidth: "800px",
           mb: 3,
         }}
       >
@@ -167,7 +169,7 @@ export default function Attendance() {
               label="Pick Date"
               value={date}
               onChange={(newDate) => setDate(newDate)}
-              sx={{ width: isMobile ? "100%" : "auto" }} // Full width on mobile
+              sx={{ width: isMobile ? "100%" : "auto" }}
             />
           </DemoContainer>
         </LocalizationProvider>
@@ -175,7 +177,7 @@ export default function Attendance() {
         <Box
           sx={{
             minWidth: 120,
-            width: isMobile ? "100%" : "auto", // Full width on mobile
+            width: isMobile ? "30%" : "auto",
           }}
         >
           <InputLabel id="division-select-label">Division</InputLabel>
@@ -185,7 +187,7 @@ export default function Attendance() {
             value={division}
             label="Division"
             onChange={(e) => setDivision(e.target.value)}
-            fullWidth={isMobile} // Full width on mobile
+            fullWidth={isMobile}
           >
             <MenuItem value={"G3"}>G3</MenuItem>
             <MenuItem value={"H3"}>H3</MenuItem>
@@ -194,12 +196,11 @@ export default function Attendance() {
         </Box>
       </Box>
 
-      {/* DataGrid */}
       <Box
         sx={{
           height: "60dvh",
-          width: "90%",
-          maxWidth: "1200px", // Limit width for larger screens
+          width: "100%",
+          maxWidth: "1200px",
           mb: 3,
         }}
       >
@@ -216,14 +217,13 @@ export default function Attendance() {
         />
       </Box>
 
-      {/* Submit Button */}
       <Button
         variant="contained"
         color="primary"
         onClick={handleSubmit}
         sx={{
           mt: 2,
-          width: isMobile ? "90%" : "auto", // Full width on mobile
+          width: isMobile ? "90%" : "auto",
         }}
       >
         {isInsert ? "Insert" : "Submit"}

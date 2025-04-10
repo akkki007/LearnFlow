@@ -8,6 +8,7 @@ import { InputLabel, Select, MenuItem } from "@mui/material";
 
 export default function Marks() {
   const [rows, setRows] = useState([]);
+  const [changedRows, setChangedRows] = useState([]);
   const [division, setDivision] = useState("H3");
   const [subject, setSubject] = useState("Android");
 
@@ -41,7 +42,18 @@ export default function Marks() {
     const updatedRows = rows.map((row) =>
       row.id === updatedRow.id ? updatedRow : row
     );
-
+    setChangedRows((prev) => {
+      const existingRowIndex = prev.findIndex(
+        (row) => row.id === updatedRow.id
+      );
+      if (existingRowIndex >= 0) {
+        const newChangedRows = [...prev];
+        newChangedRows[existingRowIndex] = updatedRow;
+        return newChangedRows;
+      } else {
+        return [...prev, updatedRow];
+      }
+    });
     setRows(updatedRows);
     return updatedRow;
   };
@@ -156,10 +168,17 @@ export default function Marks() {
 
   const handleSubmit = async () => {
     try {
+<<<<<<< HEAD:components/marks.jsx
       const response = await axios.post("http://localhost:4000/updateMarks", {
         division: division,
         subject: subject,
         marks: rows,
+=======
+      const response = await axios.post("/api/marks/update", {
+        division: division,
+        subject: subject,
+        marks: changedRows,
+>>>>>>> marks/performance:app/marks/marks.jsx
       });
       console.log("Marks updated:", response.data);
     } catch (error) {
@@ -190,15 +209,23 @@ export default function Marks() {
   return (
     <div
       style={{
+        margin: "0",
         height: "100%",
-        width: "100%",
+        width: "98%",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
       }}
     >
-      <div style={{ display: "flex", gap: "20px", margin: "10px 0" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          margin: "10px 0",
+          width: "98%",
+        }}
+      >
         <Box sx={{ minWidth: 120 }}>
           <InputLabel id="division-select-label">Division</InputLabel>
           <Select
@@ -234,7 +261,7 @@ export default function Marks() {
         </Box>
       </div>
 
-      <Box sx={{ height: "70dvh", width: "90%" }}>
+      <Box sx={{ height: "70dvh", width: "90dvw" }}>
         <DataGrid
           rows={rows}
           columns={columns}

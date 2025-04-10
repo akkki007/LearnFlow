@@ -14,7 +14,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import Attendance from "@/components/attendance"
+import Attendance from "@/app/attendance/attendance"
 
 export default function Page() {
   return (
@@ -37,9 +37,9 @@ export default function Page() {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <Attendance />
-          </div>
+          <div className="grid auto-rows-min gap-4 md:grid-cols-1">
+            <Attendance/>
+          </div>   
         </div>
       </SidebarInset>
     </SidebarProvider>
