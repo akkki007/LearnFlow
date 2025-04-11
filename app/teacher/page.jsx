@@ -1,21 +1,19 @@
 "use client";
 
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "../../components/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
+} from "../../components/ui/breadcrumb";
+import { Separator } from "../../components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import Marks from "@/app/marks/marks";
+} from "../../components/ui/sidebar";
+import Marks from "../marks/marks";
 
 export default function Page() {
   return (
@@ -38,12 +36,11 @@ export default function Page() {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+          <div className="grid auto-rows-min gap-4 md:grid-cols-1">
             <Marks />
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
-  );
   );
 }

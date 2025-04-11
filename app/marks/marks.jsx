@@ -168,17 +168,10 @@ export default function Marks() {
 
   const handleSubmit = async () => {
     try {
-<<<<<<< HEAD:components/marks.jsx
-      const response = await axios.post("http://localhost:4000/updateMarks", {
-        division: division,
-        subject: subject,
-        marks: rows,
-=======
       const response = await axios.post("/api/marks/update", {
         division: division,
         subject: subject,
-        marks: changedRows,
->>>>>>> marks/performance:app/marks/marks.jsx
+        marks: rows,
       });
       console.log("Marks updated:", response.data);
     } catch (error) {
@@ -207,25 +200,8 @@ export default function Marks() {
   }, [division, subject]);
 
   return (
-    <div
-      style={{
-        margin: "0",
-        height: "100%",
-        width: "98%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          gap: "20px",
-          margin: "10px 0",
-          width: "98%",
-        }}
-      >
+    <div className="w-full h-full p-4 flex flex-col items-center">
+      <div className="w-full max-w-6xl flex gap-4 mb-4">
         <Box sx={{ minWidth: 120 }}>
           <InputLabel id="division-select-label">Division</InputLabel>
           <Select
@@ -261,7 +237,7 @@ export default function Marks() {
         </Box>
       </div>
 
-      <Box sx={{ height: "70dvh", width: "90dvw" }}>
+      <Box sx={{ height: "70vh", width: "100%", maxWidth: "1800px" }}>
         <DataGrid
           rows={rows}
           columns={columns}
