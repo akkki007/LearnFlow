@@ -1,149 +1,162 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
 import {
   BookOpen,
   Percent,
-  GalleryVerticalEnd,
   School,
   Settings2,
   FileUser,
   BookOpenIcon,
+  Home,
+  LayoutDashboard,
+  CalendarDays,
+  MessageSquare,
+  LogOut,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-import { NavMain } from "@/components/nav-main";
-import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-} from "@/components/ui/sidebar";
-
-import { useRouter } from "next/navigation";
-import jwt from "jsonwebtoken";
-import { title } from "process";
-
-export function AppSidebar(props) {
-  const [user, setUser] = React.useState(null);
+export function AppSidebar() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  React.useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log("Token from localStorage:", token); // Debugging
+  // Keep all the original navigation items
+  const navigationItems = [
+    {
+      title: "Home",
+      url: "/",
+      icon: Home,
+    },
+    {
+      title: "Attendance",
+      url: "/attendance",
+      icon: School,
+    },
+    {
+      title: "Marks",
+      url: "/marks",
+      icon: Percent,
+    },
+    {
+      title: "Practicals",
+      url: "/practicals",
+      icon: BookOpenIcon,
+      items:[
+        { title: "Add", url: "/pradd" },
+      ]
+    },
+    {
+      title: "Schedule",
+      url: "/schedule",
+      icon: CalendarDays,
+    },
+    {
+      title: "Messages",
+      url: "/messages",
+      icon: MessageSquare,
+     
+    },
+    
+  ];
 
-    try {
-      const decoded = jwt.decode(token);
-      console.log("Decoded Token:", decoded); // Debugging
-
-      if (!decoded || !decoded.email || !decoded.role) {
-        console.error("Invalid token structure");
+  useEffect(() => {
+    const validateTokenAndSetUser = () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+        
+        const decoded = jwtDecode(token);
+        if (!decoded?.email) throw new Error("Invalid token");
+        
+        setUser({
+          name: decoded.email.split("@")[0],
+          email: decoded.email,
+          avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(decoded.email.split("@")[0])}`,
+        });
+        setLoading(false);
+      } catch (err) {
+        console.error("Authentication error:", err.message);
         localStorage.removeItem("token");
-        router.push("/unauthorized");
-        return;
-      }
-
-      // Check token expiry
-      const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
-      if (decoded.exp && decoded.exp < currentTime) {
-        console.error("Token expired");
-        localStorage.removeItem("token");
-        router.push("/unauthorized");
-        return;
-      }
-
-      // Validate role
-      if (decoded.role !== "teacher") {
-        console.error("Unauthorized role:", decoded.role);
+        setLoading(false);
         router.push("/login");
-        return;
       }
+    };
 
-      // Set user details
-      const name = decoded.email.split("@")[0];
-      const avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(
-        name
-      )}`;
-
-      setUser({
-        name,
-        email: decoded.email,
-        avatar,
-      });
-    } catch (error) {
-      console.error("Invalid token:", error.message);
-      localStorage.removeItem("token"); // Clear invalid token
-      router.push("/unauthorized");
-    }
+    validateTokenAndSetUser();
   }, [router]);
 
-  const data = {
-    teams: [
-      {
-        name: "Government Polytechnic Pune",
-        logo: GalleryVerticalEnd,
-        plan: "Educational Institute",
-      },
-    ],
-    navMain: [
-      {
-        title: "Attendance",
-        url: "/attendance", // Link to the Attendance page
-        icon: School,
-      },
-      {
-        title: "Marks",
-        url: "/marks", // Link to the Marks page
-        icon: Percent,
-      },
-      {
-        title: "Practicals",
-        url: "/pradd", // Link to the Practicals page
-        icon: BookOpenIcon,
-      },
-      {
-        title: "Performance",
-        url: "#",
-        icon: FileUser,
-        items: [
-          { title: "Introduction", url: "#" },
-          { title: "Get Started", url: "#" },
-          { title: "Tutorials", url: "#" },
-          { title: "Changelog", url: "#" },
-        ],
-      },
-      {
-        title: "Settings",
-        url: "#",
-        icon: Settings2,
-        items: [
-          { title: "General", url: "#" },
-          { title: "Team", url: "#" },
-          { title: "Billing", url: "#" },
-          { title: "Limits", url: "#" },
-        ],
-      },
-    ],
-  };
-
-  if (!user) {
-    return <div className="text-center text-red-500">Unauthorized Access</div>;
+  if (loading) {
+    return (
+      <div className="w-64 h-full border-r p-4 space-y-4">
+        {[...Array(navigationItems.length)].map((_, i) => (
+          <div key={i} className="h-10 bg-gray-100 rounded-md animate-pulse" />
+        ))}
+      </div>
+    );
   }
 
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={user} />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
+    <div className="w-64 h-full border-r flex flex-col">
+      <div className="p-4 border-b">
+        <h1 className="text-xl font-bold">AcademyHub</h1>
+      </div>
+      
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {navigationItems.map((item) => (
+          <div key={item.title}>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3"
+              onClick={() => router.push(item.url)}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.title}
+            </Button>
+            
+            {/* Render sub-items if they exist */}
+            {item.items && item.items.map((subItem) => (
+              <Button
+                key={subItem.title}
+                variant="ghost"
+                className="w-full justify-start gap-3 pl-12"
+                onClick={() => router.push(subItem.url)}
+              >
+                {subItem.title}
+              </Button>
+            ))}
+          </div>
+        ))}
+      </nav>
+
+      <div className="p-4 border-t">
+        {user && (
+          <div className="flex items-center gap-3 mb-4">
+            <img 
+              src={user.avatar} 
+              alt={user.name} 
+              className="h-8 w-8 rounded-full" 
+            />
+            <div>
+              <p className="text-sm font-medium">{user.name}</p>
+              <p className="text-xs text-muted-foreground">{user.email}</p>
+            </div>
+          </div>
+        )}
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-3"
+          onClick={() => {
+            localStorage.removeItem("token");
+            router.push("/login");
+          }}
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
+      </div>
+    </div>
   );
 }

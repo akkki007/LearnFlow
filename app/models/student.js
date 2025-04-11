@@ -24,9 +24,9 @@ const studentSchema = new mongoose.Schema({
         type: String,
     },
     googleId: {
-        type: String, // Used for Google login
+        type: String,
         unique: true,
-        sparse: true, // Allows null values without unique constraint issues
+        sparse: true,
     },
     provider: {
         type: String,
@@ -51,7 +51,7 @@ const studentSchema = new mongoose.Schema({
         {
             practicalId: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "Practical", // Reference to the Practical schema
+                ref: "Practical",
                 required: true,
             },
             status: {
@@ -60,22 +60,41 @@ const studentSchema = new mongoose.Schema({
                 default: "in-progress",
             },
             completedAt: {
-                type: Date, // Timestamp when the practical was completed
+                type: Date,
             },
         },
     ],
 });
 
+// Add virtual fields for frontend compatibility
+studentSchema.virtual('name').get(function() {
+    return this.fullname;
+});
+
+studentSchema.virtual('rollNumber').get(function() {
+    return this.enrollmentNo;
+});
+
+// Ensure virtuals are included in toJSON output
+studentSchema.set('toJSON', {
+    virtuals: true,
+    transform: function(doc, ret) {
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+    }
+});
+
 // Hash password before saving
 studentSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
+    if (!this.isModified("password")) return next();
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
 });
 
 // Compare password for login
 studentSchema.methods.comparePassword = function (candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
+    return bcrypt.compare(candidatePassword, this.password);
 };
 
 export default mongoose.models.Student || mongoose.model("Student", studentSchema);
