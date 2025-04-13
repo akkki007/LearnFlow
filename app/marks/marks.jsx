@@ -190,6 +190,9 @@ export default function Marks() {
         if (response.data.message) {
           setRows([]);
         } else {
+          response.data.map((row, index) => {
+            row.id = index + 1;
+          });
           setRows(response.data);
         }
       } catch (error) {

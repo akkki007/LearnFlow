@@ -49,7 +49,7 @@ export async function POST(req) {
       Name: student.studentname,
       EnRoll: student.enroll,
     }));
-
+    console.log("Formatted student data:", formattedData);
     return Response.json({ user: formattedData }, { status: 200 });
   } catch (error) {
     console.error("Server error:", error);
