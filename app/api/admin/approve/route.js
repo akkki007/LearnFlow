@@ -2,6 +2,7 @@ import connectDB from "@/app/utils/dbconnect";
 import student from "@/app/models/student";
 import teacher from "@/app/models/teacher";
 import sgMail from "@sendgrid/mail";
+import supabase from "@/app/lib/supabase"; // Add supabase import
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -26,7 +27,7 @@ export async function POST(req) {
   try {
     await connectDB();
     const body = await req.json();
-    console.log("Received POST body:", body); // ✅ Debug log
+    console.log("Received POST body:", body);
 
     const { id, role } = body;
 
@@ -49,6 +50,30 @@ export async function POST(req) {
         { error: "User not found or already processed" },
         { status: 404 }
       );
+    }
+
+    // Only insert to Supabase if it's a student
+    if (role === "student") {
+      try {
+        const { data, error } = await supabase
+          .from("students") 
+          .insert([
+            {
+              enroll: user.enrollmentNo, // Adjust according to your schema
+              studentname: user.fullname || `${user.firstName} ${user.lastName}`,
+              division: user.division,        
+            }
+          ]);
+
+        if (error) {
+          console.error("Supabase insert error:", error);
+          // Don't fail the whole request, just log the error
+        } else {
+          console.log("Student inserted into Supabase:", data);
+        }
+      } catch (supabaseError) {
+        console.error("Error inserting student into Supabase:", supabaseError);
+      }
     }
 
     // Send email

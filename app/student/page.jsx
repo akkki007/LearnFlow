@@ -233,7 +233,7 @@ export default function Dashboard() {
               Schedule
             </Link>
             <Link
-              href="#"
+              href="http://localhost:8080/signup"
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:bg-muted hover:text-primary"
             >
               <MessageSquare className="h-4 w-4" />

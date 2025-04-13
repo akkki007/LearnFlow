@@ -5,6 +5,7 @@ import { ShineBorder } from "./ShineBorder";
 import { Play } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion"; // Import Framer Motion
+import Link from "next/link";
 
 export function HeroSection() {
   return (
@@ -43,13 +44,18 @@ export function HeroSection() {
             transition={{ delay: 1, duration: 1.5, type: "spring", bounce: 0.5 }}
             className="flex gap-4 justify-center"
           >
+            <Link href="/playground" passHref>
             <Button variant="outline" className="gap-2 border-white/10 bg-white/5 hover:bg-white/10">
               <Play className="w-4 h-4" />
               Demo
             </Button>
+            </Link>
+            <Link href="/register" passHref>
             <Button variant="secondary" className="bg-white text-black hover:bg-gray-100">
-              Download
+              Get Started
             </Button>
+            </Link>
+            
           </motion.div>
         </div>
 
@@ -61,14 +67,13 @@ export function HeroSection() {
         >
           <ShineBorder className="relative mx-auto" borderClassName="border border-white/10 rounded-xl overflow-hidden">
             <div className="relative border border-blue-400 rounded-xl">
-              <Image
-                src="/view.png"
-                alt="Background Gradient"
-                width={1920}
-                height={1080}
-                className="w-full h-auto"
-                priority
-              />
+              <video
+              src="video.mp4"
+              autoPlay
+              loop
+              muted
+              >
+              </video>
             </div>
           </ShineBorder>
         </motion.div>
