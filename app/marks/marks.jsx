@@ -8,6 +8,7 @@ import { InputLabel, Select, MenuItem } from "@mui/material";
 
 export default function Marks() {
   const [rows, setRows] = useState([]);
+  const [changedRows, setChangedRows] = useState([]);
   const [division, setDivision] = useState("H3");
   const [subject, setSubject] = useState("Android");
 
@@ -41,7 +42,18 @@ export default function Marks() {
     const updatedRows = rows.map((row) =>
       row.id === updatedRow.id ? updatedRow : row
     );
-
+    setChangedRows((prev) => {
+      const existingRowIndex = prev.findIndex(
+        (row) => row.id === updatedRow.id
+      );
+      if (existingRowIndex >= 0) {
+        const newChangedRows = [...prev];
+        newChangedRows[existingRowIndex] = updatedRow;
+        return newChangedRows;
+      } else {
+        return [...prev, updatedRow];
+      }
+    });
     setRows(updatedRows);
     return updatedRow;
   };
@@ -156,7 +168,7 @@ export default function Marks() {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post("http://localhost:4000/updateMarks", {
+      const response = await axios.post("/api/marks/update", {
         division: division,
         subject: subject,
         marks: rows,
@@ -188,17 +200,8 @@ export default function Marks() {
   }, [division, subject]);
 
   return (
-    <div
-      style={{
-        height: "100%",
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <div style={{ display: "flex", gap: "20px", margin: "10px 0" }}>
+    <div className="w-full h-full p-4 flex flex-col items-center">
+      <div className="w-full max-w-6xl flex gap-4 mb-4">
         <Box sx={{ minWidth: 120 }}>
           <InputLabel id="division-select-label">Division</InputLabel>
           <Select
@@ -234,7 +237,7 @@ export default function Marks() {
         </Box>
       </div>
 
-      <Box sx={{ height: "70dvh", width: "90%" }}>
+      <Box sx={{ height: "70vh", width: "100%", maxWidth: "1800px" }}>
         <DataGrid
           rows={rows}
           columns={columns}

@@ -1,5 +1,5 @@
-"use client"
-import { AppSidebar } from "@/components/app-sidebar"
+"use client";
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,12 +7,14 @@ import {
   BreadcrumbList,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import Marks from "@/components/marks"
+} from "@/components/ui/sidebar";
+import Marks from "@/app/marks/marks";
 export default function Page() {
   return (
       <SidebarProvider>
@@ -40,5 +42,6 @@ export default function Page() {
           </div>
         </SidebarInset>
       </SidebarProvider>
+  );
   );
 }
