@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import connectDB from "@/app/utils/dbconnect";
 import student from "@/app/models/student";
 import teacher from "@/app/models/teacher";
+import supabase from "@/app/lib/supabase";
 
 export async function POST(req) {
   await connectDB();
@@ -18,20 +19,20 @@ export async function POST(req) {
       email,
       password,
       role,
-      subjects = [] // Default empty array
+      subjects = [], // Default empty array
     } = body;
 
     // Validate required fields
     if (!email || !password || !role) {
       return NextResponse.json(
-        { 
+        {
           success: false,
           error: "Missing required fields",
           details: {
             email: !email ? "Email is required" : undefined,
             password: !password ? "Password is required" : undefined,
-            role: !role ? "Role is required" : undefined
-          }
+            role: !role ? "Role is required" : undefined,
+          },
         },
         { status: 400 }
       );
@@ -40,27 +41,28 @@ export async function POST(req) {
     // Block admin registration
     if (role === "admin") {
       return NextResponse.json(
-        { 
+        {
           success: false,
           error: "Admin registration is not allowed",
-          code: "ADMIN_REGISTRATION_DISABLED"
+          code: "ADMIN_REGISTRATION_DISABLED",
         },
         { status: 403 }
       );
     }
 
     // Check if user exists
-    const existingUser = role === "student" 
-      ? await student.findOne({ email })
-      : await teacher.findOne({ email });
+    const existingUser =
+      role === "student"
+        ? await student.findOne({ email })
+        : await teacher.findOne({ email });
 
     if (existingUser) {
       return NextResponse.json(
-        { 
+        {
           success: false,
           error: "User already exists",
           code: "USER_EXISTS",
-          email // Return the conflicting email
+          email, // Return the conflicting email
         },
         { status: 409 } // 409 Conflict is more appropriate
       );
@@ -70,14 +72,16 @@ export async function POST(req) {
     if (role === "student") {
       if (!fullname || !enrollmentNo || !division) {
         return NextResponse.json(
-          { 
+          {
             success: false,
             error: "Student registration incomplete",
             details: {
               fullname: !fullname ? "Full name is required" : undefined,
-              enrollmentNo: !enrollmentNo ? "Enrollment number is required" : undefined,
-              division: !division ? "Division is required" : undefined
-            }
+              enrollmentNo: !enrollmentNo
+                ? "Enrollment number is required"
+                : undefined,
+              division: !division ? "Division is required" : undefined,
+            },
           },
           { status: 400 }
         );
@@ -85,15 +89,20 @@ export async function POST(req) {
     } else if (role === "teacher") {
       if (!firstName || !lastName || !phoneNumber || subjects.length === 0) {
         return NextResponse.json(
-          { 
+          {
             success: false,
             error: "Teacher registration incomplete",
             details: {
               firstName: !firstName ? "First name is required" : undefined,
               lastName: !lastName ? "Last name is required" : undefined,
-              phoneNumber: !phoneNumber ? "Phone number is required" : undefined,
-              subjects: subjects.length === 0 ? "At least one subject is required" : undefined
-            }
+              phoneNumber: !phoneNumber
+                ? "Phone number is required"
+                : undefined,
+              subjects:
+                subjects.length === 0
+                  ? "At least one subject is required"
+                  : undefined,
+            },
           },
           { status: 400 }
         );
@@ -105,22 +114,39 @@ export async function POST(req) {
       email,
       password,
       role,
-      status: "pending"
+      status: "pending",
     };
 
     if (role === "student") {
       Object.assign(userData, {
         fullname,
         enrollmentNo,
-        division
+        division,
       });
+      const { data, error } = await supabase
+        .from(`${division}-student`)
+        .insert({
+          studentname: fullname,
+          enroll: enrollmentNo,
+        });
+      if (error) {
+        console.error("Error inserting student data:", error);
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Failed to insert student data",
+            code: "INSERTION_ERROR",
+          },
+          { status: 400 }
+        );
+      }
     } else {
       Object.assign(userData, {
         firstName,
         lastName,
         fullname: `${firstName} ${lastName}`,
         phoneNumber,
-        subjects
+        subjects,
       });
     }
 
@@ -129,22 +155,21 @@ export async function POST(req) {
     await newUser.save();
 
     return NextResponse.json(
-      { 
+      {
         success: true,
         message: "Account created. Awaiting admin approval.",
-        userId: newUser._id 
+        userId: newUser._id,
       },
       { status: 201 }
     );
-
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: error.message || "Registration failed",
         code: "INTERNAL_ERROR",
-        ...(process.env.NODE_ENV === "development" && { stack: error.stack })
+        ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
       },
       { status: 500 }
     );
