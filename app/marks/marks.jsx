@@ -190,6 +190,9 @@ export default function Marks() {
         if (response.data.message) {
           setRows([]);
         } else {
+          response.data.forEach((row, index) => {
+            row.id = index + 1; // Assigning a unique ID to each row
+          });
           setRows(response.data);
         }
       } catch (error) {
