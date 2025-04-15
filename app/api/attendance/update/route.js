@@ -20,21 +20,19 @@ export async function POST(req) {
       const isPresent = row.isPresent ? true : false;
 
       const { data, error } = await supabase
-        .from("attendance")
+        .from(`${division}-attendance`)
         .select("*")
         .eq("enroll", row.EnRoll)
-        .eq("pracdates", date)
-        .eq("division", division);
+        .eq("pracdates", date);
 
       if (error) throw error;
 
       if (data && data.length > 0) {
         return supabase
-          .from("attendance")
+          .from(`${division}-attendance`)
           .update({ ispresent: isPresent })
           .eq("enroll", row.EnRoll)
-          .eq("pracdates", date)
-          .eq("division", division);
+          .eq("pracdates", date);
       }
     });
 

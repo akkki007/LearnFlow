@@ -18,9 +18,8 @@ export async function POST(req) {
 
     // ✅ Fetch student data
     const { data, error } = await supabase
-      .from("students")
-      .select("studentname, enroll")
-      .eq("division", division);
+      .from(`${division}-student`)
+      .select("studentname, enroll");
 
     if (error) {
       console.error(

@@ -26,10 +26,9 @@ export async function POST(req) {
 
       // Update the marks
       const { error } = await supabase
-        .from("student_marks")
+        .from(`${division}-marks`)
         .update(scores)
         .eq("enroll", enroll)
-        .eq("division", division)
         .eq("subject", subject);
 
       if (error) {
