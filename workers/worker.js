@@ -25,12 +25,13 @@ const languageConfigs = {
   },
   54: { // C++
     image: "gcc:latest",
-    runCommand: (filename) => `g++ ${filename} -o /tmp/output && /tmp/output`,
+    // Split compilation and execution for better error handling
+    runCommand: (filename) => `g++ ${filename} -o /tmp/output 2>&1 && echo "COMPILATION_SUCCESS" && /tmp/output`,
     extension: ".cpp"
   },
 };
 
-// ✅ Function to pull Docker image if not available
+// Function to pull Docker image if not available
 async function ensureImageExists(imageName) {
   const images = await docker.listImages();
   const exists = images.some(img =>
@@ -53,7 +54,7 @@ async function ensureImageExists(imageName) {
   }
 }
 
-// ✅ Code Execution Function
+// Code Execution Function with improved error handling
 async function executeCode(submissionId, code, languageId, input) {
   console.log(`Executing code for submission ${submissionId}`);
 
@@ -62,7 +63,7 @@ async function executeCode(submissionId, code, languageId, input) {
     return { submissionId, output: "Unsupported language", error: true };
   }
 
-  // ✅ Fix Path Issue: Use `path.resolve()` and convert Windows `\` to `/`
+  // Fix Path Issue: Use `path.resolve()` and convert Windows `\` to `/`
   let tempDir = path.resolve("/tmp", `code-${submissionId}-${uuidv4()}`);
   tempDir = tempDir.replace(/\\/g, '/'); // Convert to Linux-style path
 
@@ -70,13 +71,13 @@ async function executeCode(submissionId, code, languageId, input) {
   mkdirSync(tempDir, { recursive: true });
 
   try {
-    // ✅ Write code to file
+    // Write code to file
     const filename = `code${config.extension}`;
     const filepath = posix.join(tempDir, filename);
     writeFileSync(filepath, code);
     console.log(`File written to: ${filepath}`);
 
-    // ✅ Write input to file (if provided)
+    // Write input to file (if provided)
     let inputRedirect = "";
     if (input) {
       const inputFile = `${tempDir}/input.txt`;
@@ -85,29 +86,29 @@ async function executeCode(submissionId, code, languageId, input) {
       console.log(`Input written to: ${inputFile}`);
     }
 
-    // ✅ Ensure Docker image exists
+    // Ensure Docker image exists
     await ensureImageExists(config.image);
 
-    // ✅ Prepare execution command
+    // Prepare execution command
     const execCommand = `${config.runCommand(`/app/${filename}`)}${inputRedirect}`;
     console.log(`Running command: ${execCommand}`);
 
-    // ✅ Create Docker container
+    // Create Docker container
     const container = await docker.createContainer({
       Image: config.image,
-      Cmd: ["/bin/sh", "-c", execCommand], // ✅ Fix: Pass as single string
+      Cmd: ["/bin/sh", "-c", execCommand],
       Tty: true,
       HostConfig: {
         Memory: 100 * 1024 * 1024, // 100 MB memory limit
         NetworkMode: "none", // No network access
-        Binds: [`${tempDir}:/app`], // ✅ Mounting tempDir to `/app`
+        Binds: [`${tempDir}:/app`], // Mounting tempDir to `/app`
       },
     });
 
-    // ✅ Start container
+    // Start container
     await container.start();
 
-    // ✅ Capture container output
+    // Capture container output
     let output = "";
     const stream = await container.attach({
       stream: true,
@@ -119,7 +120,7 @@ async function executeCode(submissionId, code, languageId, input) {
       output += chunk.toString();
     });
 
-    // ✅ Polling with `inspect()` to track container status
+    // Polling with `inspect()` to track container status
     const checkContainerStatus = async () => {
       while (true) {
         const containerInfo = await container.inspect();
@@ -131,19 +132,43 @@ async function executeCode(submissionId, code, languageId, input) {
             output = logs.toString();
           }
 
+          // Clean up container
           await container.remove();
+
+          // Improved error handling for C++ compilation errors
+          if (languageId === 54 && !output.includes("COMPILATION_SUCCESS")) {
+            // Format the compiler error message
+            const formattedError = output
+              .split('\n')
+              .map(line => line.trim())
+              .filter(line => line.length > 0)
+              .join('\n');
+
+            return {
+              submissionId,
+              output: `Compilation Error:\n${formattedError}`,
+              exitCode: containerInfo.State.ExitCode,
+              error: true
+            };
+          }
+
+          // For successful C++ compilation, remove the marker
+          if (languageId === 54) {
+            output = output.replace("COMPILATION_SUCCESS\n", "");
+          }
 
           return {
             submissionId,
             output: output || `No output. Exit code: ${containerInfo.State.ExitCode}`,
             exitCode: containerInfo.State.ExitCode,
+            error: containerInfo.State.ExitCode !== 0
           };
         }
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
     };
 
-    // ✅ Start polling
+    // Start polling
     return await checkContainerStatus();
 
   } catch (error) {
@@ -154,7 +179,7 @@ async function executeCode(submissionId, code, languageId, input) {
       error: true
     };
   } finally {
-    // ✅ Clean up temp directory
+    // Clean up temp directory
     try {
       rmSync(tempDir, { recursive: true, force: true });
       console.log(`Temp directory removed: ${tempDir}`);
@@ -164,7 +189,7 @@ async function executeCode(submissionId, code, languageId, input) {
   }
 }
 
-// ✅ Worker function to listen to Redis
+// Worker function to listen to Redis
 async function worker() {
   try {
     await redisClient.connect();
@@ -188,7 +213,7 @@ async function worker() {
 
           console.log(`Execution completed for submission: ${data.submissionId}`);
 
-          // ✅ Push result back to Redis
+          // Push result back to Redis
           await redisClient.rPush("result_queue", JSON.stringify(executionResult));
         }
       } catch (err) {
@@ -200,5 +225,5 @@ async function worker() {
   }
 }
 
-// ✅ Start worker
+// Start worker
 worker();

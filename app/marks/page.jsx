@@ -7,8 +7,6 @@ import {
   BreadcrumbList,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
@@ -42,6 +40,5 @@ export default function Page() {
           </div>
         </SidebarInset>
       </SidebarProvider>
-  );
   );
 }
