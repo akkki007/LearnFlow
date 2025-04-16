@@ -6,11 +6,11 @@ import supabase from "@/app/lib/supabase";
 
 // Create Nodemailer transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.GMAIL_EMAIL,
-    pass: process.env.GMAIL_APP_PASSWORD
-  }
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
 });
 
 export async function GET(req) {
@@ -18,7 +18,7 @@ export async function GET(req) {
     await connectDB();
     const students = await student.find({ status: "pending" });
     const teachers = await teacher.find({ status: "pending" });
-    
+
     return Response.json({ students, teachers });
   } catch (error) {
     console.error("Error fetching pending users:", error);
@@ -61,18 +61,72 @@ export async function POST(req) {
     // Your existing Supabase logic
     if (role === "student") {
       const { fullname, enrollmentNo, division } = user;
-      const { data, error } = await supabase
+      const { data_ins, error_ins } = await supabase
         .from(`${division}-student`)
         .insert({
           studentname: fullname,
           enroll: enrollmentNo,
         });
-      if (error) {
-        console.error("Error inserting student data:", error);
+      if (error_ins) {
+        console.error("Error inserting student data:", error_ins);
         return Response.json(
           {
             success: false,
             error: "Failed to insert student data",
+            code: "INSERTION_ERROR",
+          },
+          { status: 400 }
+        );
+      }
+      // Creating record in the ${division}-marks table for Subject="Java"
+      const { data_1, error_1 } = await supabase
+        .from(`${division}-marks`)
+        .insert({
+          enroll: enrollmentNo,
+          Subject: "Java",
+        });
+      if (error_1) {
+        console.error("Error inserting marks data:", error_1);
+        return Response.json(
+          {
+            success: false,
+            error: "Failed to insert marks data",
+            code: "INSERTION_ERROR",
+          },
+          { status: 400 }
+        );
+      }
+      // Creating record in the ${division}-marks table for Subject="Python"
+      const { data_2, error_2 } = await supabase
+        .from(`${division}-marks`)
+        .insert({
+          enroll: enrollmentNo,
+          Subject: "Python",
+        });
+      if (error_2) {
+        console.error("Error inserting marks data:", error_2);
+        return Response.json(
+          {
+            success: false,
+            error: "Failed to insert marks data",
+            code: "INSERTION_ERROR",
+          },
+          { status: 400 }
+        );
+      }
+      // Creating record in the ${division}-marks table for Subject="Android"
+      const { data_3, error_3 } = await supabase
+        .from(`${division}-marks`)
+        .insert({
+          enroll: enrollmentNo,
+          Subject: "Android",
+        });
+      if (error_3) {
+        console.error("Error inserting marks data:", error_3);
+        return Response.json(
+          {
+            success: false,
+            error: "Failed to insert marks data",
             code: "INSERTION_ERROR",
           },
           { status: 400 }
@@ -97,7 +151,7 @@ export async function POST(req) {
             </div>
           </div>
         `,
-        text: `Your Learnflow account has been approved. You can now log in at ${process.env.NEXTAUTH_URL}`
+        text: `Your Learnflow account has been approved. You can now log in at ${process.env.NEXTAUTH_URL}`,
       };
 
       const info = await transporter.sendMail(mailOptions);
@@ -110,7 +164,7 @@ export async function POST(req) {
       success: true,
       message: "User approved successfully",
       userId: user._id,
-      email: user.email
+      email: user.email,
     });
   } catch (error) {
     console.error("Error in approval process:", error);
