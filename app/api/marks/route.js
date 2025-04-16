@@ -20,7 +20,7 @@ export async function POST(req) {
     const { data: marksData, error: marksError } = await supabase
       .from(`${division}-marks`)
       .select("*")
-      .eq("division", division)
+      .eq("Subject", subject)
       .order("enroll", { ascending: true });
 
     if (marksError) {
