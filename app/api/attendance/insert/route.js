@@ -19,27 +19,16 @@ export async function POST(req) {
     const filteredRows = updatedRows.map((stud) => ({
       enroll: stud.EnRoll,
       ispresent: stud.isPresent,
-      division: division,
       pracdates: date,
     }));
 
     // Insert into `attendance`
     const { data, error } = await supabase
-      .from("attendance")
+      .from(`${division}-attendance`)
       .insert(filteredRows);
 
     if (error) {
       console.error("Error inserting attendance data:", error);
-      return Response.json({ error: "Database insert error" }, { status: 500 });
-    }
-
-    // Insert into `daterecord`
-    const { data: dateData, error: dateError } = await supabase
-      .from("daterecord")
-      .insert([{ division: division, pracdates: date }]);
-
-    if (dateError) {
-      console.error("Error inserting date record:", dateError);
       return Response.json({ error: "Database insert error" }, { status: 500 });
     }
 

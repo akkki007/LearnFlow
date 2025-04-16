@@ -2,165 +2,91 @@ import { NextResponse } from "next/server";
 import connectDB from "@/app/utils/dbconnect";
 import Practical from "@/app/models/practicals";
 import Student from "@/app/models/student";
+import nodemailer from "nodemailer";
 
 // Connect to the database
 await connectDB();
 
-// Configure SendGrid
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-// GET: Fetch all practicals
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const tid = searchParams.get('tid');
-    
-    if (!tid) {
-      return NextResponse.json(
-        { error: "Teacher ID (tid) is required" },
-        { status: 400 }
-      );
-    }
-
-    const practicals = await Practical.find({ tid });
-    
-    return NextResponse.json({
-      success: true,
-      data: practicals
-    });
-
-  } catch (error) {
-    console.error("Error fetching practicals:", error);
-    return NextResponse.json(
-      { 
-        success: false,
-        error: error.message || "Failed to fetch practicals" 
-      },
-      { status: 500 }
-    );
+// Configure Nodemailer with Gmail SMTP
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_EMAIL,
+    pass: process.env.GMAIL_APP_PASSWORD // Use App Password if 2FA enabled
   }
-}
+});
 
-// POST: Create a new practical with email notifications
+// POST: Create new practical and send emails
 export async function POST(request) {
   try {
-    const requestBody = await request.json();
-    const { subject, practicalNo, title, description, relatedTheory, tid } = requestBody;
+    const { subject, practicalNo, title, description, relatedTheory, tid } = await request.json();
 
     // Validate required fields
-    const missingFields = [];
-    if (!subject) missingFields.push('subject');
-    if (!practicalNo) missingFields.push('practicalNo');
-    if (!title) missingFields.push('title');
-    if (!description) missingFields.push('description');
-    if (!relatedTheory) missingFields.push('relatedTheory');
-    if (!tid) missingFields.push('tid');
-
-    if (missingFields.length > 0) {
+    if (!subject || !practicalNo || !title || !description || !relatedTheory || !tid) {
       return NextResponse.json(
-        { 
-          success: false,
-          error: "Missing required fields",
-          missingFields 
-        },
+        { success: false, error: "All fields are required" },
         { status: 400 }
       );
     }
 
-    // Check for duplicate practical number
-    const existingPractical = await Practical.findOne({ 
-      practicalNo,
-      tid 
-    });
-
-    if (existingPractical) {
+    // Check duplicate
+    if (await Practical.findOne({ practicalNo, tid })) {
       return NextResponse.json(
-        { 
-          success: false,
-          error: `Practical number ${practicalNo} already exists for this teacher` 
-        },
+        { success: false, error: `Practical ${practicalNo} already exists` },
         { status: 400 }
       );
     }
 
-    // Create new practical
-    const newPractical = new Practical({
-      subject,
-      practicalNo,
-      title,
-      description,
-      relatedTheory,
-      tid,
+    // Save practical
+    const newPractical = await Practical.create({
+      subject, practicalNo, title, description, relatedTheory, tid,
       createdAt: new Date()
     });
 
-    await newPractical.save();
-
-    // Send email notifications to all students (non-blocking)
-    try {
-      const students = await Student.find({});
-      const msg = {
-        from: {
-          email: process.env.SENDGRID_FROM_EMAIL || 'noreply@learnflow.com',
-          name: 'Learnflow'
-        },
-        subject: `New Practical: ${title}`,
-        text: `A new practical has been assigned:\n\nSubject: ${subject}\nPractical No: ${practicalNo}\nTitle: ${title}\n\nDescription: ${description}\n\nPlease login to complete it.`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2563eb;">New Practical Assignment</h2>
-            <p>Dear Student,</p>
-            <p>A new practical has been assigned to you:</p>
-            <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
-              <p><strong>Subject:</strong> ${subject}</p>
-              <p><strong>Practical No:</strong> ${practicalNo}</p>
-              <p><strong>Title:</strong> ${title}</p>
-              <p><strong>Description:</strong> ${description}</p>
-            </div>
-            <p>Please log in to your AcademyHub account to view and complete the practical.</p>
-            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
-              <p>Best regards,<br>The AcademyHub Team</p>
-            </div>
-          </div>
-        `,
-        personalizations: students.map(student => ({
+    // Email sending with Nodemailer
+    const students = await Student.find({});
+    
+    // Send emails sequentially to avoid Gmail rate limits
+    for (const student of students) {
+      try {
+        await transporter.sendMail({
+          from: `"Learnflow" <${process.env.GMAIL_EMAIL}>`,
           to: student.email,
-          dynamic_template_data: {
-            student_name: student.name,
-            subject,
-            practicalNo,
-            title,
-            description
-          }
-        }))
-      };
-
-      // Send emails in background
-      sgMail.sendMultiple(msg).then(() => {
-        console.log(`Emails sent to ${students.length} students`);
-      }).catch(error => {
-        console.error('Error sending emails:', error.response?.body || error.message);
-      });
-    } catch (emailError) {
-      console.error("Error preparing emails:", emailError);
+          subject: `New Practical: ${title}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #2563eb;">New Practical Assignment</h2>
+              <p>Dear ${student.name},</p>
+              <p>A new practical has been assigned to you:</p>
+              <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                <p><strong>Subject:</strong> ${subject}</p>
+                <p><strong>Practical No:</strong> ${practicalNo}</p>
+                <p><strong>Title:</strong> ${title}</p>
+                <p><strong>Description:</strong> ${description}</p>
+              </div>
+              <p>Please log in to your account to complete the practical.</p>
+              <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+                <p>Best regards,<br>The Learnflow Team</p>
+              </div>
+            </div>
+          `,
+          text: `New Practical: ${title}\n\nDear ${student.name},\n\nA new practical (${subject} - ${practicalNo}) has been assigned to you.\n\nDescription: ${description}\n\nPlease log in to complete it.`
+        });
+        console.log(`Email sent to ${student.email}`);
+      } catch (emailError) {
+        console.error(`Failed to send to ${student.email}:`, emailError);
+      }
     }
 
     return NextResponse.json(
-      {
-        success: true,
-        data: newPractical
-      },
+      { success: true, data: newPractical },
       { status: 201 }
     );
 
   } catch (error) {
-    console.error("Error creating practical:", error);
+    console.error("💥 FULL ERROR:", error);
     return NextResponse.json(
-      { 
-        success: false,
-        error: error.message || "Failed to create practical" 
-      },
+      { success: false, error: error.message },
       { status: 500 }
     );
   }

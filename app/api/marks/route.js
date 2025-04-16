@@ -18,10 +18,9 @@ export async function POST(req) {
 
     // Fetch marks data
     const { data: marksData, error: marksError } = await supabase
-      .from("student_marks")
+      .from(`${division}-marks`)
       .select("*")
       .eq("division", division)
-      .eq("subject", subject)
       .order("enroll", { ascending: true });
 
     if (marksError) {
@@ -49,9 +48,8 @@ export async function POST(req) {
 
     // Fetch student names
     const { data: students, error: studentError } = await supabase
-      .from("students")
+      .from(`${division}-student`)
       .select("studentname")
-      .eq("division", division)
       .order("enroll", { ascending: true });
 
     if (studentError) {
@@ -78,7 +76,7 @@ export async function POST(req) {
       }
     }
     //console.log(marksData);
-    
+
     return Response.json(marksData, { status: 200 });
   } catch (error) {
     console.error("Detailed error:", error);

@@ -18,10 +18,9 @@ export async function POST(req) {
 
     // ✅ Fetch attendance data
     const { data: attendanceData, error: attendanceError } = await supabase
-      .from("attendance")
+      .from(`${division}-attendance`)
       .select("*")
       .eq("pracdates", date)
-      .eq("division", division)
       .order("enroll", { ascending: true });
 
     if (attendanceError) {

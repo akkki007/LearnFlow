@@ -110,45 +110,7 @@ export async function POST(req) {
     }
 
     // Create new user
-    const userData = {
-      email,
-      password,
-      role,
-      status: "pending",
-    };
-
-    if (role === "student") {
-      Object.assign(userData, {
-        fullname,
-        enrollmentNo,
-        division,
-      });
-      const { data, error } = await supabase
-        .from(`${division}-student`)
-        .insert({
-          studentname: fullname,
-          enroll: enrollmentNo,
-        });
-      if (error) {
-        console.error("Error inserting student data:", error);
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Failed to insert student data",
-            code: "INSERTION_ERROR",
-          },
-          { status: 400 }
-        );
-      }
-    } else {
-      Object.assign(userData, {
-        firstName,
-        lastName,
-        fullname: `${firstName} ${lastName}`,
-        phoneNumber,
-        subjects,
-      });
-    }
+    
 
     const Model = role === "student" ? student : teacher;
     const newUser = new Model(userData);
