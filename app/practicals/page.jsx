@@ -13,6 +13,9 @@ import {
   Search,
   Filter,
   ChevronDown,
+  Sparkles,
+  Bot,
+  User,
 } from "lucide-react";
 import {
   Table,
@@ -41,7 +44,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CodeEditorModal } from "@/components/code-editor-modal";
 import { AppSidebar } from "@/components/app-sidebar";
-import toast from "react-hot-toast";
+import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
 
 export default function SubmissionsDashboard() {
   const searchParams = useSearchParams();
@@ -50,6 +54,8 @@ export default function SubmissionsDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [aiDetectionLoading, setAiDetectionLoading] = useState(false);
+  const [aiResults, setAiResults] = useState({});
 
   const practicalNo = searchParams.get('practicalNo');
 
@@ -80,16 +86,47 @@ export default function SubmissionsDashboard() {
         sub._id === submissionId ? { ...sub, status: newStatus } : sub
       ));
 
-      toast({
-        title: "Status updated",
-        description: `Changed to ${newStatus}`,
-      });
+      toast.success(`Status updated to ${newStatus}`);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
+      toast.error("Update failed: " + error.message);
+    }
+  };
+
+  const detectAI = async (submissionId) => {
+    try {
+      setAiDetectionLoading(true);
+      const submission = submissions.find(s => s._id === submissionId);
+      if (!submission) return;
+
+      const response = await fetch("/api/ai-detection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: submission.code }),
       });
+
+      if (!response.ok) throw new Error("AI detection failed");
+
+      const result = await response.json();
+      setAiResults(prev => ({ ...prev, [submissionId]: result }));
+
+      // Update status if AI detected
+      if (result.isAiGenerated) {
+        await updateSubmissionStatus(submissionId, "AI Detected");
+      }
+
+      if (result.isAiGenerated) {
+        toast.error(`AI Content Detected (${Math.round(result.probability * 100)}% probability)`, {
+          description: "This submission appears to be AI-generated"
+        });
+      } else {
+        toast.success("Human-written Content", {
+          description: "This appears to be human-written"
+        });
+      }
+    } catch (error) {
+      toast.error("AI Detection Error: " + error.message);
+    } finally {
+      setAiDetectionLoading(false);
     }
   };
 
@@ -111,11 +148,7 @@ export default function SubmissionsDashboard() {
         setSubmissions(data.submissions || []);
       } catch (error) {
         console.error("Error fetching submissions:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load submissions",
-          variant: "destructive",
-        });
+        toast.error("Failed to load submissions");
       } finally {
         setLoading(false);
       }
@@ -139,6 +172,8 @@ export default function SubmissionsDashboard() {
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "Issue":
         return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case "AI Detected":
+        return <Bot className="h-4 w-4 text-purple-500" />;
       default:
         return <Clock className="h-4 w-4 text-yellow-500" />;
     }
@@ -186,6 +221,7 @@ export default function SubmissionsDashboard() {
                   <SelectItem value="Pending">Pending</SelectItem>
                   <SelectItem value="Completed">Completed</SelectItem>
                   <SelectItem value="Issue">Issue</SelectItem>
+                  <SelectItem value="AI Detected">AI Detected</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -210,6 +246,7 @@ export default function SubmissionsDashboard() {
                     <TableHead>Practical</TableHead>
                     <TableHead>Language</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>AI Detection</TableHead>
                     <TableHead>Submitted</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -218,6 +255,7 @@ export default function SubmissionsDashboard() {
                   {filteredSubmissions.map((submission) => {
                     const student = getStudentInfo(submission);
                     const practical = getPracticalInfo(submission);
+                    const aiResult = aiResults[submission._id];
                     
                     return (
                       <TableRow key={submission._id}>
@@ -260,21 +298,60 @@ export default function SubmissionsDashboard() {
                                   <AlertCircle className="mr-2 h-4 w-4 text-red-500" />
                                   Issue
                                 </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => updateSubmissionStatus(submission._id, "AI Detected")}
+                                >
+                                  <Bot className="mr-2 h-4 w-4 text-purple-500" />
+                                  AI Detected
+                                </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
                         </TableCell>
                         <TableCell>
+                          {aiResult ? (
+                            <div className="flex items-center gap-2">
+                              {aiResult.isAiGenerated ? (
+                                <Bot className="h-4 w-4 text-purple-500" />
+                              ) : (
+                                <User className="h-4 w-4 text-green-500" />
+                              )}
+                              <Progress 
+                                value={aiResult.probability * 100} 
+                                className="w-24 h-2"
+                                indicatorColor={
+                                  aiResult.isAiGenerated ? "bg-purple-500" : "bg-green-500"
+                                }
+                              />
+                              <span className="text-xs w-8">
+                                {Math.round(aiResult.probability * 100)}%
+                              </span>
+                            </div>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => detectAI(submission._id)}
+                              disabled={aiDetectionLoading}
+                            >
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              {aiDetectionLoading ? "Analyzing..." : "Check AI"}
+                            </Button>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {new Date(submission.createdAt).toLocaleString()}
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            onClick={() => setSelectedSubmission(submission)}
-                          >
-                            View Code
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => setSelectedSubmission(submission)}
+                            >
+                              View Code
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -292,9 +369,11 @@ export default function SubmissionsDashboard() {
             studentName={getStudentInfo(selectedSubmission).fullname}
             practicalNo={getPracticalInfo(selectedSubmission).practicalNo}
             onClose={() => setSelectedSubmission(null)}
+            onDetectAI={() => detectAI(selectedSubmission._id)}
+            aiResult={aiResults[selectedSubmission._id]}
           />
         )}
       </div>
     </div>
   );
-}
+} 

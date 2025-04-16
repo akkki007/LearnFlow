@@ -50,6 +50,7 @@ export default function Header() {
           <Link
             href="/admin"
             className="text-md/6 poppins-semibold font-semibold text-green-600 hover:text-green-800"
+            prefetch={false} // Disable prefetching for this link
           >
             Admin Dashboard
           </Link>
@@ -84,7 +85,7 @@ export default function Header() {
         className="flex items-center justify-between p-6 lg:px-8"
       >
         <div className="flex lg:flex-1">
-          <Link href="/" className="-m-1.5 p-1.5">
+          <Link href="/" className="-m-1.5 p-1.5" prefetch={true}>
             <Image src="/logo.png" alt="learnflow" width={160} height={40} className="h-40 w-auto" />
           </Link>
         </div>
@@ -103,6 +104,7 @@ export default function Header() {
             <Link
               key={item.name}
               href={item.href}
+              prefetch={true}
               className="text-md poppins-regular hover:text-green-600 hover:transition-all hover:scale-110 font-semibold text-gray-900 transition-transform duration-300 ease-in-out"
             >
               {item.name}
@@ -115,11 +117,13 @@ export default function Header() {
               <Link
                 href="/register"
                 className="text-md/6 poppins-semibold font-semibold text-zinc-600 hover:text-zinc-900"
+                prefetch={true}
               >
                 Sign Up
               </Link>
               <Link
                 href="/login"
+                prefetch={true}
                 className="text-md/6 poppins-semibold font-semibold text-zinc-600 hover:text-zinc-900"
               >
                 Log in
@@ -148,13 +152,14 @@ export default function Header() {
         <div className="fixed inset-0 z-50" />
         <Dialog.Panel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex items-center justify-between">
-            <Link href="/" className="-m-1.5 p-1.5">
+            <Link href="/" className="-m-1.5 p-1.5" prefetch={true}>
               <Image
                 src="/logo.png"
                 alt="EduForge"
                 width={160}
                 height={40}
                 className="h-40 w-auto"
+                priority={true}
               />
             </Link>
             <button
@@ -171,6 +176,7 @@ export default function Header() {
               <div className="space-y-2 py-6">
                 {navigation.map((item) => (
                   <Link
+                    prefetch={true} 
                     key={item.name}
                     href={item.href}
                     className="-mx-3 block hover:text-green-600 rounded-lg px-3 py-2 text-base/7 poppins-regular font-semibold text-gray-900 hover:bg-gray-50"
@@ -185,11 +191,13 @@ export default function Header() {
                     <Link
                       href="/register"
                       className="text-md/6 poppins-semibold font-semibold text-gray-900"
+                      prefetch={true}
                     >
                       Sign Up
                     </Link>
                     <Link
                       href="/login"
+                      prefetch={true}
                       className="text-md/6 poppins-semibold font-semibold text-gray-900"
                     >
                       Log in

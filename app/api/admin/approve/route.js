@@ -1,18 +1,24 @@
 import connectDB from "@/app/utils/dbconnect";
 import student from "@/app/models/student";
 import teacher from "@/app/models/teacher";
-import sgMail from "@sendgrid/mail";
-import supabase from "@/app/lib/supabase"; // Add supabase import
+import nodemailer from "nodemailer";
+import supabase from "@/app/lib/supabase";
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Create Nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_EMAIL,
+    pass: process.env.GMAIL_APP_PASSWORD
+  }
+});
 
 export async function GET(req) {
   try {
     await connectDB();
-
     const students = await student.find({ status: "pending" });
     const teachers = await teacher.find({ status: "pending" });
-
+    
     return Response.json({ students, teachers });
   } catch (error) {
     console.error("Error fetching pending users:", error);
@@ -52,35 +58,33 @@ export async function POST(req) {
       );
     }
 
-    // Only insert to Supabase if it's a student
+    // Your existing Supabase logic
     if (role === "student") {
-      try {
-        const { data, error } = await supabase
-          .from("students") 
-          .insert([
-            {
-              enroll: user.enrollmentNo, // Adjust according to your schema
-              studentname: user.fullname || `${user.firstName} ${user.lastName}`,
-              division: user.division,        
-            }
-          ]);
-
-        if (error) {
-          console.error("Supabase insert error:", error);
-          // Don't fail the whole request, just log the error
-        } else {
-          console.log("Student inserted into Supabase:", data);
-        }
-      } catch (supabaseError) {
-        console.error("Error inserting student into Supabase:", supabaseError);
+      const { fullname, enrollmentNo, division } = user;
+      const { data, error } = await supabase
+        .from(`${division}-student`)
+        .insert({
+          studentname: fullname,
+          enroll: enrollmentNo,
+        });
+      if (error) {
+        console.error("Error inserting student data:", error);
+        return Response.json(
+          {
+            success: false,
+            error: "Failed to insert student data",
+            code: "INSERTION_ERROR",
+          },
+          { status: 400 }
+        );
       }
     }
 
-    // Send email
+    // Send email using Nodemailer
     try {
-      const msg = {
+      const mailOptions = {
+        from: `"Learnflow" <${process.env.GMAIL_EMAIL}>`,
         to: user.email,
-        from: process.env.SENDGRID_FROM_EMAIL || "akshaynazare3@gmail.com",
         subject: "Your Learnflow Account Has Been Approved",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -96,8 +100,8 @@ export async function POST(req) {
         text: `Your Learnflow account has been approved. You can now log in at ${process.env.NEXTAUTH_URL}`
       };
 
-      await sgMail.send(msg);
-      console.log(`Approval email sent to ${user.email}`);
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`Approval email sent to ${user.email}`, info.messageId);
     } catch (emailError) {
       console.error("Error sending approval email:", emailError);
     }

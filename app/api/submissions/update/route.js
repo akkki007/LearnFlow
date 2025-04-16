@@ -1,11 +1,16 @@
 // app/api/submissions/update/route.js
 import connectDB from "@/app/utils/dbconnect";
 import Submission from "@/app/models/submission";
+import nodemailer from "nodemailer";
 
-
-// Configure SendGrid
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Configure Nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_EMAIL,
+    pass: process.env.GMAIL_APP_PASSWORD
+  }
+});
 
 export async function PUT(request) {
   try {
@@ -39,12 +44,15 @@ export async function PUT(request) {
         'Pending': 'is being reviewed'
       };
 
-      const msg = {
+      const statusColors = {
+        'Completed': '#10b981',
+        'Issue': '#ef4444',
+        'Pending': '#f59e0b'
+      };
+
+      const mailOptions = {
+        from: `"Learnflow" <${process.env.GMAIL_EMAIL}>`,
         to: student.email,
-        from: {
-          email: process.env.SENDGRID_FROM_EMAIL || 'noreply@Learnflow.com',
-          name: 'Learnflow'
-        },
         subject: `Submission Update: Practical ${practical.practicalNo}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -53,10 +61,7 @@ export async function PUT(request) {
             <p>Your submission for <strong>Practical ${practical.practicalNo}: ${practical.title}</strong> ${statusMessages[status] || 'has been updated'}.</p>
             
             <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
-              <p><strong>Status:</strong> <span style="color: ${
-                status === 'Completed' ? '#10b981' : 
-                status === 'Issue' ? '#ef4444' : '#f59e0b'
-              }">${status}</span></p>
+              <p><strong>Status:</strong> <span style="color: ${statusColors[status]}">${status}</span></p>
               ${status === 'Issue' ? `
                 <p><strong>Feedback:</strong> Please review the comments and resubmit your work.</p>
               ` : ''}
@@ -75,9 +80,9 @@ export async function PUT(request) {
       };
 
       // Send email without waiting for response
-      sgMail.send(msg).catch(error => {
-        console.error('Error sending email:', error.response?.body || error.message);
-      });
+      transporter.sendMail(mailOptions)
+        .then(info => console.log(`Email sent to ${student.email}:`, info.messageId))
+        .catch(error => console.error('Error sending email:', error));
 
     } catch (emailError) {
       console.error("Error preparing email notification:", emailError);
